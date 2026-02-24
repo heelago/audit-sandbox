@@ -96,10 +96,12 @@ Stabilize instructor onboarding and first-use experience (email + welcome + guid
 | T80 | Make lint check reliable for current Next.js setup | done | `lint` script now runs `tsc --noEmit` to provide stable local CI signal. |
 | T81 | Prune App Hosting deploy payload (prod+demo alignment) | done | Synced `firebase.demo.json` ignore rules with prod baseline and added excludes for `prisma/dev.db`, `prisma/dev.db-journal`, `*.pdf` across deploy ignore files. |
 | T82 | Add commit-aware smart App Hosting deploy wrapper | done | Added `scripts/deploy/firebase-deploy-apphosting-smart.ps1` + package scripts; supports skip-on-no-runtime-change, `-DryRun`, and `-Force`. |
-| T83 | Seed smart deploy state with first successful live rollout | pending | Run `pnpm.cmd run deploy:apphosting:smart` once so `.firebase/deploy-state/auditsandbox.last_deployed_commit.txt` is initialized. |
+| T83 | Seed smart deploy state with first successful live rollout | done | Ran `deploy:apphosting:smart`; rollout complete at `2625ed6`; state file seeded and re-run correctly skips. |
+| T84 | Sage color migration + Frank Ruhl Libre typography | in-progress | `tokens.css`: accent→#85A88B, info→sage, focus-ring→sage, font-display→Frank Ruhl Libre. `tokens.ts` synced. `globals.css` added font import + sage selection color. Onboarding hub CSS migrated from blue to sage. |
+| T85 | Create wizard "dating app" sub-step flow | done | Replaced 4-step wizard with 11 sub-step conversational flow. New components: WizardStepCard, DisciplinePresetGrid, StrategyCards. Hidden prompt with auto-build on submit. Advanced toggle for power users. |
 
 ## Next Actions
-1. Run first live deploy through `pnpm.cmd run deploy:apphosting:smart` to initialize smart deploy state tracking.
+1. Commit sage color migration files (`tokens.css`, `tokens.ts`, `globals.css`) and deploy.
 2. Execute the manual checklist in `QA-CHECKLIST-CREATE-WIZARD-2026-02-24.md` and capture any remaining UI regressions.
 3. Validate end-to-end auto-registration flow in production: submit form -> receive code email -> login works without admin action.
 4. Confirm the beta cap UX in create-flow messaging and API error handling under both default and env override (`BETA_ASSIGNMENT_LIMIT`).

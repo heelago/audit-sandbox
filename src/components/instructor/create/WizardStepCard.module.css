@@ -16,7 +16,7 @@
 @keyframes cardSlideIn {
   from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(24px);
   }
   to {
     opacity: 1;

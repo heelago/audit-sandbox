@@ -57,11 +57,26 @@ export function WizardSidebar({
           return (
             <div key={step.id} className={styles.stepRow}>
               <div className={styles.markerWrap}>
-                <span
-                  aria-hidden
-                  className={styles.marker}
-                  data-state={state}
-                />
+                {isDone ? (
+                  <svg
+                    aria-hidden="true"
+                    className={styles.marker}
+                    data-state="done"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                  >
+                    <circle cx="7" cy="7" r="6" fill="var(--sage-border)" />
+                    <path d="M4 7.2L6 9.2L10 5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <span
+                    aria-hidden
+                    className={styles.marker}
+                    data-state={state}
+                  />
+                )}
               </div>
               <button
                 type="button"

@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/Textarea';
 import {
   type DisciplinePresetId,
   type PlantedSignalId,
-  PLANTED_SIGNAL_PRESETS,
   PLANTED_SIGNAL_LIBRARY,
   getPlantedSignalPresetById,
   suggestPlantedSignalPreset,
