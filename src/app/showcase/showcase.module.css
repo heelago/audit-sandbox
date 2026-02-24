@@ -1,8 +1,8 @@
 .page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 15%, #8b5e3c12 0, transparent 34%),
-    radial-gradient(circle at 88% 8%, #4a6f8b12 0, transparent 28%),
+    radial-gradient(circle at 12% 15%, rgba(133, 168, 139, 0.07) 0, transparent 34%),
+    radial-gradient(circle at 88% 8%, rgba(159, 85, 56, 0.07) 0, transparent 28%),
     var(--bg);
   color: var(--ink);
   padding: 34px 20px 110px;
@@ -27,7 +27,7 @@
   border: 1px solid var(--border);
   padding: 7px 11px;
   border-radius: 999px;
-  background: #fff;
+  background: var(--card);
 }
 
 .title {
@@ -48,30 +48,30 @@
 
 .introPanel {
   margin: 14px 0 18px;
-  border: 1px solid #e4dacd;
+  border: 1px solid var(--border);
   border-radius: 16px;
   background:
-    radial-gradient(circle at 85% 18%, #8b5e3c10, transparent 36%),
-    #fffdf9;
+    radial-gradient(circle at 85% 18%, rgba(133, 168, 139, 0.06), transparent 36%),
+    var(--neutral-surface);
   padding: 16px;
 }
 
 .introEyebrow {
   margin: 0 0 6px;
   font-size: 12px;
-  color: #7b6857;
+  color: var(--ink-faint);
 }
 
 .introTitle {
   margin: 0 0 8px;
   font-size: 20px;
   line-height: 1.4;
-  color: #3f3429;
+  color: var(--ink);
 }
 
 .introText {
   margin: 0;
-  color: #5f5548;
+  color: var(--ink-soft);
   font-size: 14px;
   line-height: 1.8;
 }
@@ -81,9 +81,9 @@
 }
 
 .introModalBtn {
-  border: 1px solid #d6c2ac;
-  background: #fff;
-  color: #5e4c3b;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
   border-radius: 9px;
   padding: 7px 11px;
   font-size: 12px;
@@ -93,18 +93,18 @@
 
 .valueStrip {
   margin: 0 0 14px;
-  border: 1px solid #e2d3c1;
+  border: 1px solid var(--border);
   border-radius: 14px;
   background:
-    radial-gradient(circle at 12% 10%, #8b5e3c14 0, transparent 35%),
-    #fffcf8;
+    radial-gradient(circle at 12% 10%, rgba(133, 168, 139, 0.08) 0, transparent 35%),
+    var(--neutral-surface);
   padding: 12px;
 }
 
 .valueStripTitle {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #5a4634;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
@@ -115,23 +115,23 @@
 }
 
 .valueCard {
-  border: 1px solid #eadccd;
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  background: #fff;
+  background: var(--card);
   padding: 9px;
 }
 
 .valueCardTitle {
   margin: 0 0 4px;
   font-size: 12px;
-  color: #5b4a3a;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
 .valueCardText {
   margin: 0;
   font-size: 12px;
-  color: #6a5f53;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
@@ -151,24 +151,24 @@
 }
 
 .quickTourBtnPrimary {
-  border: 1px solid #8b5e3c;
-  background: #8b5e3c;
-  color: #fff8f2;
+  border: 1px solid var(--accent-emphasis);
+  background: var(--accent-emphasis);
+  color: #fff;
 }
 
 .quickTourBtn {
-  border: 1px solid #d8c7b4;
-  background: #fff;
-  color: #6a5848;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
 }
 
 .instructorPreviewPanel {
   margin: 0 0 14px;
-  border: 1px solid #dbcab5;
+  border: 1px solid var(--border);
   border-radius: 14px;
   background:
-    radial-gradient(circle at 10% 14%, #8b5e3c14 0, transparent 42%),
-    #fffbf7;
+    radial-gradient(circle at 10% 14%, rgba(133, 168, 139, 0.08) 0, transparent 42%),
+    var(--neutral-surface);
   padding: 12px;
 }
 
@@ -179,14 +179,14 @@
 .instructorPreviewTitle {
   margin: 0 0 4px;
   font-size: 14px;
-  color: #5a4432;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
 .instructorPreviewMeta {
   margin: 0;
   font-size: 12px;
-  color: #6d5a49;
+  color: var(--ink-soft);
 }
 
 .instructorPreviewGrid {
@@ -196,9 +196,9 @@
 }
 
 .instructorPreviewCard {
-  border: 1px solid #e7d9c9;
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  background: #fff;
+  background: var(--card);
   padding: 10px;
 }
 
@@ -206,13 +206,13 @@
   margin: 0 0 7px;
   font-size: 12px;
   font-weight: 700;
-  color: #5a4938;
+  color: var(--sage-text);
 }
 
 .instructorPreviewCardSubTitle {
   margin: 8px 0 6px;
   font-size: 11px;
-  color: #6c5d4f;
+  color: var(--ink-soft);
   font-weight: 600;
 }
 
@@ -223,7 +223,7 @@
 }
 
 .instructorPreviewStat {
-  border: 1px solid #efe3d8;
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 7px 8px;
   display: grid;
@@ -232,7 +232,7 @@
 
 .instructorPreviewStatLabel {
   font-size: 10px;
-  color: #78695b;
+  color: var(--ink-faint);
 }
 
 .previewChips {
@@ -250,15 +250,15 @@
 }
 
 .previewChip {
-  border: 1px solid #e1cfbb;
-  background: #fff8f0;
-  color: #6d5745;
+  border: 1px solid var(--border);
+  background: var(--sage-surface);
+  color: var(--sage-text);
 }
 
 .previewChipMuted {
-  border: 1px dashed #d8cbc0;
-  background: #faf8f5;
-  color: #887c70;
+  border: 1px dashed var(--border);
+  background: var(--neutral-surface);
+  color: var(--ink-faint);
 }
 
 .previewQuestionList {
@@ -270,7 +270,7 @@
 
 .previewQuestionItem {
   font-size: 12px;
-  color: #5f5347;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
@@ -283,19 +283,19 @@
 }
 
 .instructorFlowItem {
-  border: 1px solid #e8dacb;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fffcf8;
+  background: var(--neutral-surface);
 }
 
 .instructorFlowItemActive {
-  border-color: #8b5e3c;
-  box-shadow: 0 0 0 2px #f3e1d0;
+  border-color: var(--accent-emphasis);
+  box-shadow: 0 0 0 2px rgba(133, 168, 139, 0.25);
 }
 
 .instructorFlowItemDone {
-  border-color: #c8b39c;
-  background: #fff8f1;
+  border-color: var(--border);
+  background: var(--sage-surface);
 }
 
 .instructorFlowBtn {
@@ -315,14 +315,14 @@
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  border: 1px solid #d9c8b7;
+  border: 1px solid var(--border);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: #6c5948;
-  background: #fff;
+  color: var(--ink-soft);
+  background: var(--card);
 }
 
 .instructorFlowBody {
@@ -332,23 +332,23 @@
 
 .instructorFlowTitle {
   font-size: 12px;
-  color: #5a4736;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
 .instructorFlowDesc {
   font-size: 11px;
-  color: #6d6052;
+  color: var(--ink-soft);
   line-height: 1.45;
 }
 
 .instructorFlowState {
   font-size: 10px;
-  color: #6a5a4b;
-  border: 1px solid #decebd;
+  color: var(--ink-soft);
+  border: 1px solid var(--border);
   border-radius: 999px;
   padding: 2px 7px;
-  background: #fff;
+  background: var(--card);
   font-weight: 700;
 }
 
@@ -361,9 +361,9 @@
 
 .previewActionPill {
   border-radius: 999px;
-  border: 1px solid #d8c7b4;
-  background: #fff;
-  color: #655546;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
   font-size: 10px;
   font-weight: 700;
   padding: 3px 8px;
@@ -377,16 +377,16 @@
 }
 
 .introCard {
-  border: 1px solid #eadfce;
+  border: 1px solid var(--border-light);
   border-radius: 12px;
-  background: #fff;
+  background: var(--card);
   padding: 10px 12px;
 }
 
 .introCardTitle {
   margin: 0 0 8px;
   font-size: 13px;
-  color: #5a4736;
+  color: var(--sage-text);
   font-weight: 600;
 }
 
@@ -398,7 +398,7 @@
 }
 
 .introListItem {
-  color: #6a5f54;
+  color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -427,8 +427,8 @@
 
 .roleBtnActive {
   background: var(--accent);
-  color: #fff8f2;
-  box-shadow: 0 2px 6px rgba(57, 41, 27, 0.22);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(39, 69, 48, 0.22);
 }
 
 .roleModeBanner {
@@ -439,19 +439,19 @@
 }
 
 .roleModeBanner[data-mode='instructor'] {
-  color: #6a4d37;
+  color: var(--sage-text);
 }
 
 .roleModeBanner[data-mode='student'] {
-  color: #365c6f;
+  color: var(--amber-text);
 }
 
 .walkthroughPanel {
-  border: 1px solid #d8ccb8;
+  border: 1px solid var(--border);
   border-radius: 12px;
   background:
-    radial-gradient(circle at 82% 14%, #8b5e3c17 0, transparent 42%),
-    #fff9f2;
+    radial-gradient(circle at 82% 14%, rgba(133, 168, 139, 0.09) 0, transparent 42%),
+    var(--neutral-surface);
   padding: 12px;
   display: flex;
   align-items: flex-start;
@@ -463,20 +463,20 @@
 .walkthroughTitle {
   margin: 0 0 4px;
   font-size: 13px;
-  color: #5e4936;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
 .walkthroughStepMeta {
   margin: 0 0 2px;
   font-size: 11px;
-  color: #78614b;
+  color: var(--ink-faint);
 }
 
 .walkthroughStepTitle {
   margin: 0 0 4px;
   font-size: 13px;
-  color: #4f3f31;
+  color: var(--ink);
   font-weight: 700;
 }
 
@@ -484,7 +484,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.55;
-  color: #665749;
+  color: var(--ink-soft);
   max-width: 620px;
 }
 
@@ -497,7 +497,7 @@
 .walkthroughHint {
   margin: 0;
   font-size: 12px;
-  color: #705c49;
+  color: var(--ink-soft);
   font-weight: 600;
 }
 
@@ -511,15 +511,15 @@
 }
 
 .walkthroughBtn {
-  border: 1px solid #d9c9b7;
-  background: #fff;
-  color: #6a5949;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
 }
 
 .walkthroughBtnPrimary {
-  border: 1px solid #8b5e3c;
-  background: #8b5e3c;
-  color: #fff8f2;
+  border: 1px solid var(--accent-emphasis);
+  background: var(--accent-emphasis);
+  color: #fff;
 }
 
 .walkthroughBtn:disabled,
@@ -531,33 +531,33 @@
 .walkthroughTargetActive {
   border-radius: 12px;
   box-shadow:
-    0 0 0 2px #d19d70,
-    0 0 0 5px rgba(209, 157, 112, 0.2);
+    0 0 0 2px var(--accent-emphasis),
+    0 0 0 5px rgba(133, 168, 139, 0.2);
   animation: walkthroughPulse 1.35s ease-in-out infinite;
 }
 
 @keyframes walkthroughPulse {
   0% {
     box-shadow:
-      0 0 0 2px #d19d70,
-      0 0 0 5px rgba(209, 157, 112, 0.2);
+      0 0 0 2px var(--accent-emphasis),
+      0 0 0 5px rgba(133, 168, 139, 0.2);
   }
   50% {
     box-shadow:
-      0 0 0 2px #d19d70,
-      0 0 0 9px rgba(209, 157, 112, 0.14);
+      0 0 0 2px var(--accent-emphasis),
+      0 0 0 9px rgba(133, 168, 139, 0.14);
   }
   100% {
     box-shadow:
-      0 0 0 2px #d19d70,
-      0 0 0 5px rgba(209, 157, 112, 0.2);
+      0 0 0 2px var(--accent-emphasis),
+      0 0 0 5px rgba(133, 168, 139, 0.2);
   }
 }
 
 .tourBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(31, 24, 17, 0.18);
+  background: rgba(39, 59, 43, 0.18);
   z-index: 70;
   pointer-events: none;
 }
@@ -566,7 +566,7 @@
   position: fixed;
   inset: 0;
   z-index: 95;
-  background: rgba(25, 19, 13, 0.46);
+  background: rgba(39, 59, 43, 0.4);
   display: grid;
   place-items: center;
   padding: 16px;
@@ -576,12 +576,12 @@
   width: min(860px, calc(100vw - 20px));
   max-height: calc(100vh - 24px);
   overflow: auto;
-  border: 1px solid #d9c6b1;
+  border: 1px solid var(--border);
   border-radius: 14px;
   background:
-    radial-gradient(circle at 88% 10%, #8b5e3c1b 0, transparent 38%),
-    #fffcf8;
-  box-shadow: 0 20px 44px rgba(30, 22, 14, 0.3);
+    radial-gradient(circle at 88% 10%, rgba(133, 168, 139, 0.1) 0, transparent 38%),
+    var(--neutral-surface);
+  box-shadow: 0 20px 44px rgba(39, 59, 43, 0.2);
   padding: 14px;
 }
 
@@ -596,14 +596,14 @@
 .pedagogyModalTitle {
   margin: 0;
   font-size: 18px;
-  color: #4f3e2f;
+  color: var(--ink);
 }
 
 .pedagogyModalClose {
-  border: 1px solid #d5c2ad;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
-  color: #5f4e3f;
+  background: var(--card);
+  color: var(--ink-soft);
   padding: 7px 10px;
   font-size: 12px;
   font-weight: 700;
@@ -614,45 +614,45 @@
   margin: 0 0 10px;
   font-size: 13px;
   line-height: 1.75;
-  color: #5f5347;
+  color: var(--ink-soft);
 }
 
 .tourTooltip {
   position: fixed;
   z-index: 80;
-  border: 1px solid #ddc8b0;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fffefc;
-  box-shadow: 0 16px 34px rgba(35, 27, 18, 0.25);
+  background: var(--card);
+  box-shadow: 0 16px 34px rgba(39, 59, 43, 0.18);
   padding: 10px 12px 12px;
 }
 
 .tourTooltipInstructor {
-  border-color: #d8c2aa;
+  border-color: var(--sage-border);
 }
 
 .tourTooltipStudent {
-  border-color: #bfd5e1;
+  border-color: rgba(159, 85, 56, 0.5);
 }
 
 .tourTooltipMeta {
   margin: 0 0 4px;
   font-size: 11px;
-  color: #7a6550;
+  color: var(--ink-faint);
 }
 
 .tourTooltipTitle {
   margin: 0 0 4px;
   font-size: 14px;
   font-weight: 700;
-  color: #4f3f31;
+  color: var(--ink);
 }
 
 .tourTooltipText {
   margin: 0 0 9px;
   font-size: 12px;
   line-height: 1.55;
-  color: #5e5145;
+  color: var(--ink-soft);
 }
 
 .tourTooltipActions {
@@ -670,15 +670,15 @@
 }
 
 .tourTooltipBtn {
-  border: 1px solid #d6c6b4;
-  background: #fff;
-  color: #645445;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
 }
 
 .tourTooltipBtnPrimary {
-  border: 1px solid #8b5e3c;
-  background: #8b5e3c;
-  color: #fff8f2;
+  border: 1px solid var(--accent-emphasis);
+  background: var(--accent-emphasis);
+  color: #fff;
 }
 
 .tourTooltipBtn:disabled,
@@ -691,9 +691,9 @@
   position: absolute;
   width: 10px;
   height: 10px;
-  background: #fffefc;
-  border-left: 1px solid #ddc8b0;
-  border-top: 1px solid #ddc8b0;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
   transform: translateX(-50%) rotate(45deg);
 }
 
@@ -707,19 +707,19 @@
 }
 
 .panel {
-  background: #fcfbf8;
+  background: var(--neutral-surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 10px 28px rgba(39, 32, 22, 0.06);
+  box-shadow: 0 10px 28px rgba(39, 59, 43, 0.06);
   overflow: hidden;
 }
 
 .panelInstructor {
-  border-color: #d8c5af;
+  border-color: var(--sage-border);
 }
 
 .panelStudent {
-  border-color: #b9d2df;
+  border-color: rgba(159, 85, 56, 0.5);
 }
 
 .panelHeader {
@@ -729,7 +729,7 @@
   gap: 12px;
   padding: 14px 18px;
   border-bottom: 1px solid var(--border-light);
-  background: #fff;
+  background: var(--card);
 }
 
 .fieldChip {
@@ -737,9 +737,9 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #6a5542;
-  background: #f7ece2;
-  border: 1px solid #e8d3c0;
+  color: var(--sage-text);
+  background: var(--sage-surface);
+  border: 1px solid rgba(133, 168, 139, 0.3);
   border-radius: 999px;
   padding: 5px 10px;
 }
@@ -757,7 +757,7 @@
 .navBtn {
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--card);
   padding: 6px 10px;
   cursor: pointer;
   color: var(--ink-soft);
@@ -794,7 +794,7 @@
   border: 1px solid var(--border-light);
   border-radius: 12px;
   padding: 12px;
-  background: #fff;
+  background: var(--card);
   margin-bottom: 11px;
 }
 
@@ -834,14 +834,14 @@
   border: 1px solid var(--border-light);
   border-radius: 12px;
   padding: 10px;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .findingCardActive {
-  border-color: #b89372;
-  box-shadow: 0 4px 14px rgba(60, 42, 28, 0.12);
+  border-color: var(--accent-emphasis);
+  box-shadow: 0 4px 14px rgba(133, 168, 139, 0.15);
 }
 
 .findingHeader {
@@ -887,10 +887,10 @@
   margin: 0 0 7px;
   padding: 7px 9px;
   border-radius: 9px;
-  background: #f6f3ec;
-  border: 1px solid #e4ddcf;
+  background: var(--neutral-surface);
+  border: 1px solid var(--border-light);
   font-size: 12px;
-  color: #5f574c;
+  color: var(--ink-soft);
   line-height: 1.6;
 }
 
@@ -905,31 +905,31 @@
   margin: 8px 0 0;
   font-size: 12px;
   line-height: 1.6;
-  color: #645b4f;
+  color: var(--ink-soft);
 }
 
 .roleCard {
-  border: 1px solid #d9d3c7;
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
-  background: #fffefc;
+  background: var(--card);
   margin-bottom: 11px;
 }
 
 .roleCard[data-mode='instructor'] {
-  border-color: #dbc3a9;
-  background: linear-gradient(180deg, #fffdf9 0%, #fff7ed 100%);
+  border-color: var(--sage-border);
+  background: linear-gradient(180deg, var(--neutral-surface) 0%, var(--sage-surface) 100%);
 }
 
 .roleCard[data-mode='student'] {
-  border-color: #c2d8e3;
-  background: linear-gradient(180deg, #fbfeff 0%, #eff8fc 100%);
+  border-color: rgba(159, 85, 56, 0.25);
+  background: linear-gradient(180deg, var(--neutral-surface) 0%, var(--amber-surface) 100%);
 }
 
 .instructorCard {
-  border: 1px solid #dccbb8;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #fffdf9;
+  background: var(--neutral-surface);
   padding: 12px;
   margin-bottom: 11px;
 }
@@ -937,7 +937,7 @@
 .instructorTitle {
   margin: 0 0 7px;
   font-size: 14px;
-  color: #5a4635;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
@@ -945,7 +945,7 @@
   margin: 0 0 9px;
   font-size: 12px;
   line-height: 1.6;
-  color: #6b5c4e;
+  color: var(--ink-soft);
 }
 
 .builderControlRow {
@@ -957,7 +957,7 @@
 .builderControlLabel {
   margin: 0;
   font-size: 12px;
-  color: #5c4a39;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
@@ -970,10 +970,10 @@
 
 .builderCountBtn,
 .builderModeBtn {
-  border: 1px solid #d9c8b5;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
-  color: #655242;
+  background: var(--card);
+  color: var(--ink-soft);
   font-size: 12px;
   font-weight: 700;
   padding: 6px 9px;
@@ -986,9 +986,9 @@
 
 .builderCountBtnActive,
 .builderModeBtnActive {
-  border-color: #8b5e3c;
-  background: #fff6ec;
-  color: #4f3d2e;
+  border-color: var(--accent-emphasis);
+  background: var(--sage-surface);
+  color: var(--sage-text);
 }
 
 .builderSectionList {
@@ -998,16 +998,16 @@
 }
 
 .builderSectionCard {
-  border: 1px solid #eadccb;
+  border: 1px solid var(--border-light);
   border-radius: 10px;
-  background: #fff;
+  background: var(--card);
   padding: 9px;
 }
 
 .builderSectionTitle {
   margin: 0 0 4px;
   font-size: 12px;
-  color: #594736;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
@@ -1016,13 +1016,13 @@
   margin: 0 0 4px;
   font-size: 12px;
   line-height: 1.55;
-  color: #5f5448;
+  color: var(--ink-soft);
 }
 
 .builderSectionLabel {
   margin: 0 0 4px;
   font-size: 11px;
-  color: #796a5b;
+  color: var(--ink-faint);
   font-weight: 700;
 }
 
@@ -1033,19 +1033,19 @@
 }
 
 .builderFlawTag {
-  border: 1px solid #e5d4c1;
+  border: 1px solid var(--amber-border);
   border-radius: 999px;
-  background: #fff8f1;
-  color: #6d5947;
+  background: var(--amber-surface);
+  color: var(--amber-text);
   font-size: 10px;
   font-weight: 700;
   padding: 3px 8px;
 }
 
 .builderSummaryBox {
-  border: 1px solid #e5d7c8;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 8px;
   margin-bottom: 9px;
 }
@@ -1053,27 +1053,27 @@
 .builderSummaryTitle {
   margin: 0 0 3px;
   font-size: 11px;
-  color: #5f4e3e;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
 .builderSummaryText {
   margin: 0;
   font-size: 12px;
-  color: #6a5b4c;
+  color: var(--ink-soft);
 }
 
 .builderCalibrationCard {
-  border: 1px solid #eadbc9;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 8px;
 }
 
 .builderCalibrationTitle {
   margin: 0 0 5px;
   font-size: 12px;
-  color: #584737;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
@@ -1086,7 +1086,7 @@
 
 .builderCalibrationItem {
   font-size: 12px;
-  color: #64584d;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
@@ -1100,23 +1100,23 @@
   grid-template-columns: 18px 1fr;
   gap: 8px;
   align-items: start;
-  border: 1px solid #ece1d5;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 8px;
 }
 
 .criterionTitle {
   margin: 0 0 2px;
   font-size: 12px;
-  color: #5b4a3b;
+  color: var(--sage-text);
   font-weight: 600;
 }
 
 .criterionDesc {
   margin: 0;
   font-size: 11px;
-  color: #6e6155;
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 
@@ -1137,33 +1137,33 @@
 }
 
 .instructorPrimaryBtn {
-  border: 1px solid #8b5e3c;
-  background: #8b5e3c;
-  color: #fff8f2;
+  border: 1px solid var(--accent-emphasis);
+  background: var(--accent-emphasis);
+  color: #fff;
 }
 
 .instructorSecondaryBtn {
-  border: 1px solid #d6c4b1;
-  background: #fff;
-  color: #6b5847;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
 }
 
 .instructorStatus {
   margin: 0;
   font-size: 12px;
-  color: #6f6256;
+  color: var(--ink-soft);
 }
 
 .expectedFindingsBlock {
   margin-top: 10px;
-  border-top: 1px solid #e8dccf;
+  border-top: 1px solid var(--border-light);
   padding-top: 9px;
 }
 
 .expectedFindingsTitle {
   margin: 0 0 7px;
   font-size: 12px;
-  color: #614e3e;
+  color: var(--sage-text);
   font-weight: 700;
 }
 
@@ -1174,9 +1174,9 @@
 
 .expectedFindingBtn {
   width: 100%;
-  border: 1px solid #e8dccf;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 7px 8px;
   display: flex;
   align-items: center;
@@ -1186,21 +1186,21 @@
 }
 
 .expectedFindingBtnActive {
-  border-color: #c28f5f;
-  box-shadow: 0 2px 8px rgba(92, 60, 32, 0.14);
-  background: #fff8f1;
+  border-color: var(--accent-emphasis);
+  box-shadow: 0 2px 8px rgba(133, 168, 139, 0.18);
+  background: var(--sage-surface);
 }
 
 .expectedFindingText {
   font-size: 12px;
-  color: #5e5246;
+  color: var(--ink-soft);
   line-height: 1.45;
 }
 
 .instructorError {
   margin: 8px 0 0;
   font-size: 12px;
-  color: #9d3d3d;
+  color: var(--error);
   font-weight: 600;
 }
 
@@ -1219,7 +1219,7 @@
 .weightLabel {
   margin: 0;
   font-size: 12px;
-  color: #5a4a3a;
+  color: var(--sage-text);
 }
 
 .weightSlider {
@@ -1228,20 +1228,20 @@
 
 .weightValue {
   font-size: 12px;
-  color: #5d5043;
+  color: var(--ink-soft);
   font-weight: 700;
   min-width: 18px;
   text-align: end;
 }
 
 .selectionBox {
-  border: 1px solid #e7d9ca;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 8px;
   font-size: 12px;
   line-height: 1.55;
-  color: #5f564c;
+  color: var(--ink-soft);
   margin-bottom: 8px;
 }
 
@@ -1249,17 +1249,17 @@
   display: block;
   margin: 0 0 4px;
   font-size: 12px;
-  color: #594939;
+  color: var(--sage-text);
   font-weight: 600;
 }
 
 .formSelect {
   width: 100%;
   margin-bottom: 10px;
-  border: 1px solid #d8c8b6;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
-  color: #594a3d;
+  background: var(--card);
+  color: var(--ink-soft);
   font-size: 12px;
   padding: 8px 10px;
 }
@@ -1268,10 +1268,10 @@
   width: 100%;
   min-height: 64px;
   margin-bottom: 10px;
-  border: 1px solid #d8c8b6;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
-  color: #4f463e;
+  background: var(--card);
+  color: var(--ink);
   font-size: 12px;
   line-height: 1.55;
   padding: 8px 10px;
@@ -1286,30 +1286,30 @@
 }
 
 .savedCard {
-  border: 1px solid #ebddce;
+  border: 1px solid var(--border-light);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 8px;
 }
 
 .savedQuote {
   margin: 6px 0;
   font-size: 12px;
-  color: #5f564c;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
 .savedText {
   margin: 0 0 5px;
   font-size: 12px;
-  color: #5e554b;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
 .studentTaskCard {
-  border: 1px solid #c7dbe5;
+  border: 1px solid rgba(159, 85, 56, 0.25);
   border-radius: 12px;
-  background: linear-gradient(180deg, #fbfeff 0%, #f0f8fc 100%);
+  background: linear-gradient(180deg, var(--neutral-surface) 0%, var(--amber-surface) 100%);
   padding: 12px;
   margin-bottom: 11px;
 }
@@ -1317,7 +1317,7 @@
 .studentTaskTitle {
   margin: 0 0 8px;
   font-size: 14px;
-  color: #355a6d;
+  color: var(--amber-text);
   font-weight: 700;
 }
 
@@ -1325,28 +1325,28 @@
   width: 100%;
   height: 8px;
   border-radius: 999px;
-  background: #d9eaf2;
+  background: rgba(159, 85, 56, 0.12);
   overflow: hidden;
   margin-top: 8px;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #4b7387 0%, #6ca1ba 100%);
+  background: linear-gradient(90deg, var(--accent-emphasis) 0%, var(--accent) 100%);
 }
 
 .progressText {
   margin: 7px 0 10px;
   font-size: 12px;
-  color: #4a6677;
+  color: var(--amber-text);
 }
 
 .studentSubmitBtn {
   width: 100%;
-  border: 1px solid #4b7387;
+  border: 1px solid var(--accent-emphasis);
   border-radius: 8px;
-  background: #4b7387;
-  color: #f2f9fd;
+  background: var(--accent-emphasis);
+  color: #fff;
   padding: 8px 10px;
   font-size: 12px;
   font-weight: 700;
@@ -1356,15 +1356,15 @@
 .studentSubmitDone {
   margin: 8px 0 0;
   font-size: 12px;
-  color: #3e667b;
+  color: var(--amber-text);
   font-weight: 600;
 }
 
 .emptyFindings {
-  border: 1px dashed #d6c7b9;
+  border: 1px dashed var(--border);
   border-radius: 10px;
-  background: #fffcf8;
-  color: #756654;
+  background: var(--neutral-surface);
+  color: var(--ink-faint);
   font-size: 12px;
   padding: 10px;
 }
@@ -1379,19 +1379,19 @@
 }
 
 .sourcePill[data-source='system'] {
-  color: #6d543f;
-  background: #f5e7d8;
+  color: var(--sage-text);
+  background: var(--sage-surface);
 }
 
 .sourcePill[data-source='instructor'] {
-  color: #2f5a70;
-  background: #e3f1f8;
+  color: var(--amber-text);
+  background: var(--amber-surface);
 }
 
 .studentWorkbench {
-  border: 1px solid #d7e4ea;
+  border: 1px solid rgba(159, 85, 56, 0.2);
   border-radius: 12px;
-  background: linear-gradient(180deg, #fbfeff 0%, #f2f9fd 100%);
+  background: linear-gradient(180deg, var(--neutral-surface) 0%, var(--amber-surface) 100%);
   padding: 12px;
   margin-bottom: 11px;
 }
@@ -1399,13 +1399,13 @@
 .studentWorkbenchTitle {
   margin: 0;
   font-size: 14px;
-  color: #2f5568;
+  color: var(--amber-text);
   font-weight: 700;
 }
 
 .studentWorkbenchHint {
   margin: 6px 0 10px;
-  color: #4e6573;
+  color: var(--ink-soft);
   font-size: 12px;
   line-height: 1.55;
 }
@@ -1427,29 +1427,29 @@
 }
 
 .studentActionBtn {
-  border: 1px solid #8ab2c4;
-  background: #dff0f7;
-  color: #23485a;
+  border: 1px solid rgba(159, 85, 56, 0.35);
+  background: var(--amber-surface);
+  color: var(--amber-text);
 }
 
 .studentActionBtnGhost {
-  border: 1px solid #c3d4dc;
-  background: #fff;
-  color: #4e6573;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
 }
 
 .studentDraftBlock {
   margin-bottom: 10px;
   padding: 9px;
-  border: 1px solid #d4e3ea;
+  border: 1px solid rgba(159, 85, 56, 0.2);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
 }
 
 .studentDraftLabel {
   margin: 0 0 4px;
   font-size: 11px;
-  color: #5b7686;
+  color: var(--amber-text);
   font-weight: 600;
 }
 
@@ -1457,24 +1457,24 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.6;
-  color: #3f5b69;
+  color: var(--ink-soft);
 }
 
 .studentFieldLabel {
   display: block;
   margin: 0 0 4px;
   font-size: 12px;
-  color: #3f5b69;
+  color: var(--amber-text);
   font-weight: 600;
 }
 
 .studentSelect {
   width: 100%;
   margin-bottom: 10px;
-  border: 1px solid #c6d8e2;
+  border: 1px solid rgba(159, 85, 56, 0.25);
   border-radius: 8px;
-  background: #fff;
-  color: #2e4f61;
+  background: var(--card);
+  color: var(--ink);
   font-size: 12px;
   padding: 8px 10px;
 }
@@ -1483,10 +1483,10 @@
   width: 100%;
   min-height: 72px;
   margin-bottom: 10px;
-  border: 1px solid #c6d8e2;
+  border: 1px solid rgba(159, 85, 56, 0.25);
   border-radius: 8px;
-  background: #fff;
-  color: #2d4653;
+  background: var(--card);
+  color: var(--ink);
   font-size: 12px;
   line-height: 1.55;
   padding: 8px 10px;
@@ -1496,21 +1496,21 @@
 
 .studentError {
   margin: 0 0 8px;
-  color: #9d3d3d;
+  color: var(--error);
   font-size: 12px;
   font-weight: 600;
 }
 
 .studentSaveBtn {
   width: 100%;
-  border: 1px solid #3f6c82;
-  background: #4b7387;
-  color: #f5fbff;
+  border: 1px solid var(--accent-emphasis);
+  background: var(--accent-emphasis);
+  color: #fff;
   margin-bottom: 10px;
 }
 
 .studentSavedList {
-  border-top: 1px solid #d5e3ea;
+  border-top: 1px solid rgba(159, 85, 56, 0.2);
   padding-top: 9px;
   display: grid;
   gap: 8px;
@@ -1519,20 +1519,20 @@
 .studentSavedTitle {
   margin: 0;
   font-size: 12px;
-  color: #365a6d;
+  color: var(--amber-text);
   font-weight: 700;
 }
 
 .studentSavedEmpty {
   margin: 0;
   font-size: 12px;
-  color: #597487;
+  color: var(--ink-faint);
 }
 
 .studentSavedCard {
-  border: 1px solid #d3e1e8;
+  border: 1px solid rgba(159, 85, 56, 0.2);
   border-radius: 9px;
-  background: #fff;
+  background: var(--card);
   padding: 9px;
 }
 
@@ -1543,42 +1543,42 @@
 .studentSavedQuote {
   margin: 0 0 6px;
   font-size: 12px;
-  color: #415f70;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
 .studentSavedText {
   margin: 0 0 5px;
   font-size: 12px;
-  color: #4f6572;
+  color: var(--ink-soft);
   line-height: 1.55;
 }
 
 .roleTitle {
   margin: 0 0 6px;
   font-size: 14px;
-  color: #5a4736;
+  color: var(--sage-text);
 }
 
 .snippet {
   margin: 0;
-  background: #f6f3ec;
-  border: 1px solid #e6dfd1;
+  background: var(--neutral-surface);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   padding: 10px;
   font-size: 13px;
-  color: #5d564b;
+  color: var(--ink-soft);
   line-height: 1.75;
 }
 
 .annotatedText {
   margin: 0;
-  background: #fff;
-  border: 1px solid #e5ddd0;
+  background: var(--card);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
   padding: 12px;
   font-size: 14px;
-  color: #4c463d;
+  color: var(--ink);
   line-height: 1.95;
   white-space: pre-wrap;
   max-height: 640px;
@@ -1631,14 +1631,14 @@
   text-align: start;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--card);
   padding: 10px;
   cursor: pointer;
 }
 
 .scenarioBtnActive {
-  border-color: #b89372;
-  background: #fff8f1;
+  border-color: var(--accent-emphasis);
+  background: var(--sage-surface);
 }
 
 .scenarioBtnTitle {
@@ -1666,12 +1666,12 @@
   transform: translateX(-50%);
   z-index: 50;
   width: min(760px, calc(100vw - 24px));
-  border: 1px solid #d9b792;
+  border: 1px solid var(--sage-border);
   border-radius: 12px;
   background:
-    radial-gradient(circle at 85% 15%, #8b5e3c1f 0, transparent 44%),
-    #fff7ef;
-  box-shadow: 0 14px 30px rgba(59, 41, 24, 0.18);
+    radial-gradient(circle at 85% 15%, rgba(133, 168, 139, 0.12) 0, transparent 44%),
+    var(--neutral-surface);
+  box-shadow: 0 14px 30px rgba(39, 59, 43, 0.14);
   padding: 10px 12px;
   display: flex;
   align-items: center;
@@ -1681,16 +1681,16 @@
 
 .stickyCtaText {
   margin: 0;
-  color: #573f2b;
+  color: var(--sage-text);
   font-size: 13px;
   font-weight: 600;
 }
 
 .stickyCtaButton {
   text-decoration: none;
-  background: #8b5e3c;
-  color: #fff9f4;
-  border: 1px solid #75492d;
+  background: var(--accent-emphasis);
+  color: #fff;
+  border: 1px solid var(--accent-emphasis);
   border-radius: 9px;
   padding: 8px 12px;
   font-size: 13px;

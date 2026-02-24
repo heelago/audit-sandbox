@@ -128,6 +128,13 @@ function hasOversizedBody(request: NextRequest): boolean {
   return length > MAX_JSON_BODY_BYTES;
 }
 
+function shouldSkipOriginValidation(pathname: string): boolean {
+  // Public intake endpoint: protected in-route by honeypot, min-fill timing,
+  // per-IP/per-email rate limits, and optional reCAPTCHA.
+  // Skipping strict origin checks here avoids false 403s behind proxy/domain setups.
+  return pathname === '/api/access-requests';
+}
+
 export function middleware(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith('/api/')) {
     return NextResponse.next();
@@ -148,7 +155,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (MUTATING_METHODS.has(method)) {
-    if (hasInvalidOrigin(request)) {
+    if (!shouldSkipOriginValidation(request.nextUrl.pathname) && hasInvalidOrigin(request)) {
       return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 });
     }
     if (hasOversizedBody(request)) {

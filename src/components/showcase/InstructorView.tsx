@@ -125,9 +125,9 @@ export function InstructorView({
           isWalkthroughTarget('tour-instructor-builder') ? styles.walkthroughTargetActive : ''
         }`}
       >
-        <p className={styles.instructorTitle}>מחולל מטלה למרצה: מבנה + כשלים פדגוגיים</p>
+        <p className={styles.instructorTitle}>הקשר ונושא: כותרת, תחום ומשימת הסטודנט</p>
         <p className={styles.builderIntro}>
-          כאן מדמים את שלב היצירה: עד 3 שאלות במטלה אחת, עם מוקדי קושי טבעיים לכל חלק.
+          המרצה מגדיר כותרת, תחום אקדמי ומשימת הסטודנט. המערכת מתאימה כשלים מתוכננים לתחום.
         </p>
         <div className={styles.builderControlRow}>
           <p className={styles.builderControlLabel}>מספר שאלות במטלה</p>
@@ -231,7 +231,7 @@ export function InstructorView({
           isWalkthroughTarget('tour-instructor-criteria') ? styles.walkthroughTargetActive : ''
         }`}
       >
-        <p className={styles.instructorTitle}>הגדרת קריטריונים למרצה</p>
+        <p className={styles.instructorTitle}>כשלים מתוכננים וקריטריונים</p>
         <div className={styles.criteriaGrid}>
           {criteriaCatalog.map((criterion) => (
             <label key={criterion.id} className={styles.criterionItem}>
@@ -289,7 +289,7 @@ export function InstructorView({
           isWalkthroughTarget('tour-instructor-weights') ? styles.walkthroughTargetActive : ''
         }`}
       >
-        <p className={styles.instructorTitle}>משקלי סוגי בעיות</p>
+        <p className={styles.instructorTitle}>הגדרות יצירה ומשקלים</p>
         <div className={styles.weightGrid}>
           {annotationTypeOrder.map((type) => (
             <div key={type} className={styles.weightRow}>
@@ -310,12 +310,13 @@ export function InstructorView({
       </div>
 
       <div
-        id="tour-instructor-followup"
+        id="tour-instructor-findings"
         className={`${styles.instructorCard} ${
-          isWalkthroughTarget('tour-instructor-followup') ? styles.walkthroughTargetActive : ''
+          isWalkthroughTarget('tour-instructor-findings') ? styles.walkthroughTargetActive : ''
         }`}
       >
-        <p className={styles.instructorTitle}>תגיות המשך של המרצה</p>
+        <p className={styles.instructorTitle}>סקירה ויצירה: ממצאים ותגיות מרצה</p>
+
         <div className={styles.instructorActions}>
           <button type="button" className={styles.instructorSecondaryBtn} onClick={onCaptureInstructorSelection}>
             לכידת טקסט מסומן
@@ -352,40 +353,35 @@ export function InstructorView({
         <button type="button" className={styles.instructorPrimaryBtn} onClick={onSaveInstructorTag}>
           שמירת תגית מרצה
         </button>
-      </div>
 
-      <div
-        id="tour-instructor-findings"
-        className={`${styles.findings} ${
-          isWalkthroughTarget('tour-instructor-findings') ? styles.walkthroughTargetActive : ''
-        }`}
-      >
-        {displayedFindings.length === 0 && (
-          <div className={styles.emptyFindings}>הריצו סוכני דמו כדי לחשוף ממצאי מערכת.</div>
-        )}
-        {displayedFindings.map((finding, index) => (
-          <article key={`${finding.title}-${index}`} className={styles.findingCard}>
-            <div className={styles.findingHeader}>
-              <AnnotationBadge annotationType={finding.type} showIcon={false} />
-              {finding.severity && (
-                <span className={styles.severityPill} data-level={finding.severity}>
-                  {severityLabels[finding.severity]}
-                </span>
-              )}
-            </div>
-            <p className={styles.sourcePill} data-source={finding.source}>
-              {finding.source === 'system' ? 'ממצא מערכת' : 'נוסף על ידי מרצה'}
-            </p>
-            <h3 className={styles.findingTitle}>{finding.title}</h3>
-            {finding.quote && <p className={styles.findingQuote}>"{finding.quote}"</p>}
-            <p className={styles.findingDesc}>{finding.description}</p>
-            {finding.verificationStep && (
-              <p className={styles.findingStep}>
-                <strong>צעד אימות:</strong> {finding.verificationStep}
+        <div className={styles.findings} style={{ marginTop: 12 }}>
+          {displayedFindings.length === 0 && (
+            <div className={styles.emptyFindings}>הריצו סוכני דמו כדי לחשוף ממצאי מערכת.</div>
+          )}
+          {displayedFindings.map((finding, index) => (
+            <article key={`${finding.title}-${index}`} className={styles.findingCard}>
+              <div className={styles.findingHeader}>
+                <AnnotationBadge annotationType={finding.type} showIcon={false} />
+                {finding.severity && (
+                  <span className={styles.severityPill} data-level={finding.severity}>
+                    {severityLabels[finding.severity]}
+                  </span>
+                )}
+              </div>
+              <p className={styles.sourcePill} data-source={finding.source}>
+                {finding.source === 'system' ? 'ממצא מערכת' : 'נוסף על ידי מרצה'}
               </p>
-            )}
-          </article>
-        ))}
+              <h3 className={styles.findingTitle}>{finding.title}</h3>
+              {finding.quote && <p className={styles.findingQuote}>"{finding.quote}"</p>}
+              <p className={styles.findingDesc}>{finding.description}</p>
+              {finding.verificationStep && (
+                <p className={styles.findingStep}>
+                  <strong>צעד אימות:</strong> {finding.verificationStep}
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
       </div>
     </>
   );

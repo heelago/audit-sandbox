@@ -63,7 +63,6 @@ type TourTarget =
   | 'tour-instructor-builder'
   | 'tour-instructor-criteria'
   | 'tour-instructor-weights'
-  | 'tour-instructor-followup'
   | 'tour-instructor-findings'
   | 'tour-student-mission'
   | 'tour-student-workbench'
@@ -82,7 +81,6 @@ type InstructorJourneyTarget = Extract<
   | 'tour-instructor-builder'
   | 'tour-instructor-criteria'
   | 'tour-instructor-weights'
-  | 'tour-instructor-followup'
   | 'tour-instructor-findings'
 >;
 
@@ -216,11 +214,10 @@ const TOUR_SEEN_STORAGE_KEY = 'audit-sandbox-showcase-tour-seen-v1';
 
 const walkthroughSteps: WalkthroughStep[] = [
   { id: 'inst-1', role: 'instructor', title: 'הקשר המטלה', description: 'כאן מוצגים המטלה והטקסט הגנרטיבי שהוזנו מראש עבור הקורס הנבחר.', target: 'tour-left-context' },
-  { id: 'inst-2', role: 'instructor', title: 'מחולל המטלה למרצה', description: 'כאן המרצה בוחר עד 3 שאלות ומגדיר מוקדי קושי טבעיים לכל חלק במטלה.', target: 'tour-instructor-builder' },
-  { id: 'inst-3', role: 'instructor', title: 'הגדרת קריטריונים', description: 'המרצה בוחר אילו דפוסי כשל מוכרים של AI המערכת תאתר בריצה.', target: 'tour-instructor-criteria' },
-  { id: 'inst-4', role: 'instructor', title: 'משקלי בעיות', description: 'המרצה שולט בדגשי ההערכה באמצעות שינוי משקל לכל סוג בעיה.', target: 'tour-instructor-weights' },
-  { id: 'inst-5', role: 'instructor', title: 'תגיות המשך', description: 'המרצה מוסיף תגיות ידניות ומכוון את הריצה הבאה לאיתור דפוסים נוספים.', target: 'tour-instructor-followup' },
-  { id: 'inst-6', role: 'instructor', title: 'פיד סקירה', description: 'כאן רואים יחד ממצאי מערכת ותגיות שהמרצה הוסיף ידנית.', target: 'tour-instructor-findings' },
+  { id: 'inst-2', role: 'instructor', title: 'הקשר ונושא', description: 'המרצה מגדיר כותרת, תחום ומשימה בשפה טבעית.', target: 'tour-instructor-builder' },
+  { id: 'inst-3', role: 'instructor', title: 'כשלים מתוכננים', description: 'המרצה בוחר כשלים פדגוגיים, מחלק לחלקים ומגדיר קריטריונים.', target: 'tour-instructor-criteria' },
+  { id: 'inst-4', role: 'instructor', title: 'הגדרות יצירה', description: 'המרצה בוחר אסטרטגיה, מקורות, אורך ומספר גרסאות.', target: 'tour-instructor-weights' },
+  { id: 'inst-5', role: 'instructor', title: 'סקירה וממצאים', description: 'בדיקה סופית, הרצת ביקורת, תגיות מרצה וסקירת ממצאים.', target: 'tour-instructor-findings' },
   { id: 'stu-1', role: 'student', title: 'משימת הסטודנט', description: 'הסטודנט רואה את היעד והתקדמות לעבר מספר התיוגים הנדרש.', target: 'tour-student-mission' },
   { id: 'stu-2', role: 'student', title: 'טקסט תגובת המודל', description: 'הסטודנט מסמן משפטים ספציפיים ישירות מתוך הטקסט הגנרטיבי.', target: 'tour-model-text' },
   { id: 'stu-3', role: 'student', title: 'עמדת תיוג', description: 'הסטודנט מתייג בעיות, מסביר, מציע תיקון ומתעד אימות.', target: 'tour-student-workbench' },
@@ -228,11 +225,10 @@ const walkthroughSteps: WalkthroughStep[] = [
 ];
 
 const instructorJourneyStepsBlueprint: InstructorJourneyStep[] = [
-  { id: 'builder', title: 'בניית מטלה', description: 'מגדירים עד 3 שאלות ואת אופי המטלה בלי לכתוב פרומפט טכני.', target: 'tour-instructor-builder' },
-  { id: 'criteria', title: 'בחירת קריטריונים', description: 'בוחרים אילו כשלים ונקודות בדיקה רלוונטיים לקורס הספציפי.', target: 'tour-instructor-criteria' },
-  { id: 'weights', title: 'כיוונון משקלים', description: 'מגדירים מה נחשב חמור יותר כדי לקבל איתותים מדויקים יותר.', target: 'tour-instructor-weights' },
-  { id: 'followup', title: 'כיול והערות מרצה', description: 'מוסיפים תגיות ידניות והנחיות המשך לפני שחרור המטלה.', target: 'tour-instructor-followup' },
-  { id: 'findings', title: 'סקירת ממצאים', description: 'רואים יחד ממצאי מערכת וממצאים ידניים ומחליטים על שחרור.', target: 'tour-instructor-findings' },
+  { id: 'context', title: 'הקשר ונושא', description: 'כותרת המטלה, תחום אקדמי, ותיאור המשימה לסטודנט.', target: 'tour-instructor-builder' },
+  { id: 'signals', title: 'כשלים מתוכננים', description: 'בחירת כשלים פדגוגיים, חלוקה לחלקים, וקריטריונים להערכה.', target: 'tour-instructor-criteria' },
+  { id: 'settings', title: 'הגדרות יצירה', description: 'אסטרטגיה, מקורות, אורך טקסט ומספר גרסאות.', target: 'tour-instructor-weights' },
+  { id: 'review', title: 'סקירה ויצירה', description: 'בדיקה אחרונה, הרצת ביקורת, וסקירת ממצאים.', target: 'tour-instructor-findings' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -433,7 +429,6 @@ export default function ShowcasePage() {
     'tour-instructor-builder': builderPreviewVersion > 0,
     'tour-instructor-criteria': selectedCriteria.length > 0,
     'tour-instructor-weights': weightsEdited,
-    'tour-instructor-followup': instructorScenarioTags.length > 0,
     'tour-instructor-findings': displayedFindings.length > 0,
   };
   const activeInstructorTargetFromWalkthrough =

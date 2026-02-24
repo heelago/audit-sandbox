@@ -9,7 +9,6 @@ type InstructorJourneyTarget =
   | 'tour-instructor-builder'
   | 'tour-instructor-criteria'
   | 'tour-instructor-weights'
-  | 'tour-instructor-followup'
   | 'tour-instructor-findings';
 
 interface InstructorJourneyStep {
@@ -49,9 +48,9 @@ export function InstructorPreviewPanel({
   return (
     <section className={styles.instructorPreviewPanel} aria-label="איך נראה צד המרצה">
       <div className={styles.instructorPreviewHeader}>
-        <p className={styles.instructorPreviewTitle}>כך נראה תהליך העבודה של מרצה במערכת</p>
+        <p className={styles.instructorPreviewTitle}>תהליך יצירת מטלה — 4 שלבים</p>
         <p className={styles.instructorPreviewMeta}>
-          המרצה עונה על שאלות מובנות, והמערכת מרכיבה את הפרומפט מאחורי הקלעים.
+          המרצה עונה על שאלות בשפה טבעית, והמערכת מרכיבה את הפרומפט והכשלים מאחורי הקלעים.
         </p>
       </div>
       <div className={styles.instructorPreviewGrid}>
@@ -114,14 +113,14 @@ export function InstructorPreviewPanel({
             </div>
           </div>
           <div className={styles.previewActionRow}>
-            <span className={styles.previewActionPill}>יצירת 2 מטלות פיילוט</span>
-            <span className={styles.previewActionPill}>הרצת סוכני דמו</span>
-            <span className={styles.previewActionPill}>הוספת תגיות המשך</span>
+            <span className={styles.previewActionPill}>תצוגה מקדימה</span>
+            <span className={styles.previewActionPill}>הרצת ביקורת</span>
+            <span className={styles.previewActionPill}>סקירה ויצירה</span>
           </div>
           <ol className={styles.previewQuestionList}>
-            <li className={styles.previewQuestionItem}>הגדרת מבנה המטלה מתבצעת בשפה רגילה.</li>
-            <li className={styles.previewQuestionItem}>בחירת הקריטריונים מתורגמת לבדיקה אוטומטית.</li>
-            <li className={styles.previewQuestionItem}>המרצה מחליט מה לשחרר לסטודנטים לאחר כיול.</li>
+            <li className={styles.previewQuestionItem}>הקשר ונושא: כותרת, תחום ומשימה — בשפה רגילה.</li>
+            <li className={styles.previewQuestionItem}>כשלים מתוכננים: המערכת מתאימה כשלים פדגוגיים לתחום.</li>
+            <li className={styles.previewQuestionItem}>סקירה ויצירה: המרצה בודק, מכייל ומשחרר.</li>
           </ol>
         </article>
       </div>
