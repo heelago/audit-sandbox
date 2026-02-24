@@ -1,0 +1,63 @@
+# Demo App Hosting configuration.
+# The demo deploy script temporarily swaps this file in place of apphosting.yaml.
+runConfig:
+  minInstances: 0
+
+env:
+  - variable: DATABASE_URL
+    secret: DATABASE_URL
+    availability:
+      - RUNTIME
+  - variable: SESSION_SECRET
+    secret: SESSION_SECRET
+    availability:
+      - RUNTIME
+  - variable: ACCESS_ADMIN_CODES
+    secret: ACCESS_ADMIN_CODES
+    availability:
+      - RUNTIME
+  - variable: PUBLIC_APP_URL
+    value: "https://auditsandbox-demo--h2eapps-unified.us-central1.hosted.app/"
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_EMAIL_COLLECTION
+    value: "mail"
+    availability:
+      - RUNTIME
+  - variable: ACCESS_REQUEST_ALERT_EMAILS
+    secret: ACCESS_REQUEST_ALERT_EMAILS
+    availability:
+      - RUNTIME
+  - variable: ACCESS_REQUEST_MIN_FILL_MS
+    value: "3000"
+    availability:
+      - RUNTIME
+  - variable: ACCESS_REQUEST_RECAPTCHA_MIN_SCORE
+    value: "0.5"
+    availability:
+      - RUNTIME
+  - variable: ACCESS_REQUEST_RECAPTCHA_SITE_KEY
+    value: "6LdbvHAsAAAAANDjisf0Ug5vMD4WgUs79KI05D1D"
+    availability:
+      - RUNTIME
+  - variable: ACCESS_REQUEST_RECAPTCHA_DISABLED
+    value: "1"
+    availability:
+      - RUNTIME
+  - variable: ALLOWED_ORIGINS
+    value: "https://h2eapps-auditsandbox.web.app,https://auditsandbox--h2eapps-unified.us-central1.hosted.app,https://auditsandbox-demo--h2eapps-unified.us-central1.hosted.app,https://audit.h2eapps.com"
+    availability:
+      - RUNTIME
+  - variable: DEMO_READ_ONLY
+    value: "1"
+    availability:
+      - RUNTIME
+  - variable: DEMO_OPEN_LANDING
+    value: "1"
+    availability:
+      - RUNTIME
+  # Placeholder guard: demo backend stays mock-only until explicitly changed.
+  - variable: USE_MOCK_AI
+    value: "1"
+    availability:
+      - RUNTIME

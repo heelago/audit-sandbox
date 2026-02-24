@@ -1,0 +1,30 @@
+.card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding-block: 14px;
+  padding-inline: 16px;
+  text-align: center;
+}
+
+.value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-block-start: 4px;
+}
+
+.sub {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--ink-faint);
+  margin-block-start: 2px;
+}

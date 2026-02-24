@@ -1,0 +1,30 @@
+# Deployment pruning for Firebase App Hosting source uploads
+node_modules
+node_modules/**
+.next
+.next/**
+.next/cache
+.next/cache/**
+.next/dev/cache
+.next/dev/cache/**
+.firebase
+.firebase/**
+.pnpm-store
+.pnpm-store/**
+.git
+.git/**
+.claude
+.config
+backups
+tmp_prompt_doc
+mock assignments for demo
+New folder
+*.tsbuildinfo
+*.zip
+*.docx
+.env
+.env.*
+firebase-debug.log
+firebase-debug.*.log
+**/*.ps1
+**/*.md

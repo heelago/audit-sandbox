@@ -1,0 +1,55 @@
+{
+  "apphosting": {
+    "backendId": "auditsandbox",
+    "rootDir": ".",
+    "ignore": [
+      "node_modules",
+      "node_modules/**",
+      ".next",
+      ".next/**",
+      ".next/cache",
+      ".next/cache/**",
+      ".next/dev/cache",
+      ".next/dev/cache/**",
+      ".firebase",
+      ".firebase/**",
+      ".pnpm-store",
+      ".claude",
+      ".config",
+      "backups",
+      "tmp_prompt_doc",
+      "mock assignments for demo",
+      "New folder",
+      "*.tsbuildinfo",
+      "*.zip",
+      "*.docx",
+      ".env",
+      ".env.*",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "functions",
+      "**/*.ps1",
+      "**/*.md"
+    ],
+    "alwaysDeployFromSource": true
+  },
+  "hosting": [
+    {
+      "target": "auditSandbox",
+      "source": ".",
+      "frameworksBackend": {
+        "region": "us-central1"
+      },
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**",
+        "**/.next/**",
+        "**/.firebase/**",
+        "**/*.ps1",
+        "**/*.md"
+      ]
+    }
+  ]
+}

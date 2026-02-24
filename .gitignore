@@ -1,0 +1,16 @@
+node_modules
+.next
+.firebase
+.pnpm-store
+.env
+.env.local
+prisma/dev.db
+prisma/dev.db-journal
+/generated/prisma
+*.tsbuildinfo
+next-env.d.ts
+backups/
+.env.postgres
+.config/
+.claude/settings.local.json
+*.zip

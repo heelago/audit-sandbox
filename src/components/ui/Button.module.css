@@ -1,0 +1,60 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--ui-button-size);
+  font-weight: 600;
+  line-height: 1.4;
+  border-radius: 7px;
+  min-height: 40px;
+  padding-block: 9px;
+  padding-inline: 18px;
+  transition: background-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+/* Primary variant */
+.primary {
+  background-color: var(--accent);
+  color: #FFF9F4;
+  border: none;
+}
+
+.primary:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--accent) 92%, black);
+}
+
+/* Secondary variant */
+.secondary {
+  background-color: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--card-hover);
+}
+
+/* Small size */
+.small {
+  border-radius: 10px;
+  padding-block: 4px;
+  padding-inline: 12px;
+  min-height: 32px;
+  font-size: 13px;
+}
+
+/* Disabled state */
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 24%, transparent);
+}

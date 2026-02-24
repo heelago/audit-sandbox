@@ -1,0 +1,27 @@
+/* Status badge — generic colored pill */
+.status {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding-block: 2px;
+  padding-inline: 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Annotation type badge — icon + label pill */
+.annotation {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 8px;
+  padding-block: 3px;
+  padding-inline: 10px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}

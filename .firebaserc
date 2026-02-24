@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "h2eapps-unified"
+  },
+  "targets": {
+    "h2eapps-unified": {
+      "hosting": {
+        "auditSandbox": [
+          "h2eapps-auditsandbox"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

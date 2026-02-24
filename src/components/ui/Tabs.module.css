@@ -1,0 +1,35 @@
+.container {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-align: center;
+}
+
+.tabActive {
+  background-color: var(--bg);
+  border-bottom: 2px solid var(--accent);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tabInactive {
+  background-color: var(--card);
+  border-bottom: 2px solid transparent;
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.tabInactive:hover {
+  background-color: var(--card-hover);
+  color: var(--ink-soft);
+}
