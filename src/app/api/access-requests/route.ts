@@ -4,12 +4,19 @@ import { getSession } from '@/lib/auth';
 import { isAccessAdminCode } from '@/lib/admin-access';
 import { sanitizeOptionalTextInput, sanitizeTextInput } from '@/lib/security';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { queueAccessRequestAlertEmail } from '@/lib/onboarding-email';
+import { queueInstructorOnboardingEmail } from '@/lib/onboarding-email';
+import { randomBytes } from 'node:crypto';
 
 const ACCESS_REQUEST_LIMIT_MESSAGE = 'Too many requests. Please try again in a few minutes.';
 const ACCESS_REQUEST_VERIFICATION_FAILED_MESSAGE = 'Verification failed. Please try again.';
+const AUTO_APPROVED_MESSAGE =
+  'נרשמת לבטא בהצלחה. קוד הגישה נשלח עכשיו למייל שהזנת.';
+const AUTO_APPROVED_RECENT_MESSAGE =
+  'כבר התקבלה הרשמה מהאימייל הזה בדקות האחרונות. אם לא קיבלת קוד, אפשר לנסות שוב בעוד דקה.';
 const DEFAULT_MIN_FORM_FILL_MS = 3000;
 const DEFAULT_RECAPTCHA_MIN_SCORE = 0.5;
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const EMAIL_ERROR_MAX_LEN = 700;
 
 interface RecaptchaSiteVerifyResponse {
   success?: boolean;
@@ -64,6 +71,40 @@ function getRecaptchaMinScore(): number {
   const parsed = Number(raw);
   if (!Number.isFinite(parsed)) return DEFAULT_RECAPTCHA_MIN_SCORE;
   return Math.max(0, Math.min(1, parsed));
+}
+
+function generateSecureAccessCode(length: number): string {
+  const bytes = randomBytes(length);
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += CODE_ALPHABET[bytes[i] % CODE_ALPHABET.length];
+  }
+  return code;
+}
+
+async function nextUniqueAccessCode(): Promise<string> {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const candidate = generateSecureAccessCode(10);
+    const [accessHit, assignmentHit, studentHit] = await Promise.all([
+      prisma.instructorAccess.findUnique({ where: { code: candidate }, select: { id: true } }),
+      prisma.assignment.findFirst({ where: { instructorCode: candidate }, select: { id: true } }),
+      prisma.generatedText.findFirst({ where: { studentCode: candidate }, select: { id: true } }),
+    ]);
+    if (!accessHit && !assignmentHit && !studentHit) {
+      return candidate;
+    }
+  }
+  throw new Error('Failed to generate unique access code.');
+}
+
+function safeErrorMessage(error: unknown): string {
+  const text =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : 'unknown error';
+  return text.slice(0, EMAIL_ERROR_MAX_LEN);
 }
 
 async function verifyRecaptchaToken(
@@ -230,51 +271,135 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: ACCESS_REQUEST_VERIFICATION_FAILED_MESSAGE }, { status: 400 });
   }
 
-  const recentPending = await prisma.accessRequest.findFirst({
+  const recentRequest = await prisma.accessRequest.findFirst({
     where: {
       email,
-      status: 'pending',
     },
     orderBy: { createdAt: 'desc' },
     select: { id: true, createdAt: true },
   });
 
-  if (recentPending) {
-    const diffMs = Date.now() - recentPending.createdAt.getTime();
-    if (diffMs < 24 * 60 * 60 * 1000) {
+  if (recentRequest) {
+    const diffMs = Date.now() - recentRequest.createdAt.getTime();
+    if (diffMs < 60 * 1000) {
       return NextResponse.json(
-        { success: true, alreadyPending: true, message: 'Request already pending review.' },
+        { success: true, autoApproved: true, message: AUTO_APPROVED_RECENT_MESSAGE },
         { status: 200 }
       );
     }
   }
 
-  const created = await prisma.accessRequest.create({
-    data: {
-      fullName,
-      email,
-      institution,
-      role,
-      message,
-      status: 'pending',
-    },
-    select: { id: true, createdAt: true },
+  const now = new Date();
+  const autoReviewNote =
+    'Auto-approved during open beta. Invite code issued immediately.';
+  const existingActiveAccess = await prisma.instructorAccess.findFirst({
+    where: { email, status: 'active' },
+    orderBy: { updatedAt: 'desc' },
+    select: { id: true, code: true },
   });
 
-  // Best-effort admin alert email; request creation must not fail if email queueing fails.
+  const inviteCode = existingActiveAccess?.code ?? (await nextUniqueAccessCode());
+
+  const created = await prisma.$transaction(async (tx) => {
+    const requestRow = await tx.accessRequest.create({
+      data: {
+        fullName,
+        email,
+        institution,
+        role,
+        message,
+        status: 'approved',
+        reviewedAt: now,
+        reviewedByCode: 'AUTO_BETA',
+        reviewNotes: autoReviewNote,
+        inviteCode,
+        inviteEmailStatus: 'not_sent',
+      },
+      select: { id: true, createdAt: true },
+    });
+
+    if (existingActiveAccess) {
+      await tx.instructorAccess.update({
+        where: { code: existingActiveAccess.code },
+        data: {
+          fullName,
+          institution,
+          sourceRequestId: requestRow.id,
+        },
+      });
+    } else {
+      await tx.instructorAccess.create({
+        data: {
+          code: inviteCode,
+          fullName,
+          email,
+          institution,
+          status: 'active',
+          createdByCode: 'AUTO_BETA',
+          sourceRequestId: requestRow.id,
+        },
+      });
+    }
+
+    return requestRow;
+  });
+
+  let inviteEmailStatus: 'queued' | 'failed' = 'queued';
+  let inviteEmailAttemptedAt: Date | null = null;
+  let inviteEmailMessageId: string | null = null;
+  let inviteEmailError: string | null = null;
+
   try {
-    await queueAccessRequestAlertEmail({
+    const attemptedAt = new Date();
+    inviteEmailAttemptedAt = attemptedAt;
+    const queued = await queueInstructorOnboardingEmail({
       fullName,
       email,
+      inviteCode,
       institution,
-      role,
-      message,
-      requestId: created.id,
-      createdAtIso: created.createdAt.toISOString(),
     });
-  } catch {
-    // Swallow email queue errors and rely on admin dashboard polling as fallback.
+    inviteEmailMessageId = queued.queuedId;
+
+    await prisma.accessRequest.update({
+      where: { id: created.id },
+      data: {
+        inviteEmailStatus: 'queued',
+        inviteEmailAttemptedAt: attemptedAt,
+        inviteEmailSentAt: null,
+        inviteEmailMessageId: queued.queuedId,
+        inviteEmailError: null,
+      },
+    });
+  } catch (error) {
+    inviteEmailStatus = 'failed';
+    inviteEmailError = safeErrorMessage(error);
+    inviteEmailAttemptedAt = new Date();
+    await prisma.accessRequest.update({
+      where: { id: created.id },
+      data: {
+        inviteEmailStatus: 'failed',
+        inviteEmailAttemptedAt,
+        inviteEmailSentAt: null,
+        inviteEmailMessageId: null,
+        inviteEmailError,
+      },
+    });
   }
 
-  return NextResponse.json({ success: true, id: created.id, createdAt: created.createdAt }, { status: 201 });
+  return NextResponse.json(
+    {
+      success: true,
+      autoApproved: true,
+      id: created.id,
+      createdAt: created.createdAt,
+      message: AUTO_APPROVED_MESSAGE,
+      email: {
+        state: inviteEmailStatus,
+        attemptedAt: inviteEmailAttemptedAt,
+        queuedId: inviteEmailMessageId,
+        error: inviteEmailError,
+      },
+    },
+    { status: 201 }
+  );
 }

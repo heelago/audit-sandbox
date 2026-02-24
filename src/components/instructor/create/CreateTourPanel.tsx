@@ -34,9 +34,9 @@ export function CreateTourPanel({
     <div
       data-tour-id="tour-panel"
       style={{
-        border: '1px solid #d8e7ef',
+        border: '1px solid var(--sage-border)',
         borderRadius: 12,
-        background: '#f7fbfe',
+        background: 'var(--sage-surface)',
         padding: 14,
         marginBottom: 18,
         display: 'grid',
@@ -45,10 +45,10 @@ export function CreateTourPanel({
     >
       {!tourOpen && (
         <>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#244b60' }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sage-text)' }}>
             סיור מודרך בעמוד יצירת מטלה
           </div>
-          <div style={{ fontSize: 13, color: '#46677b', lineHeight: 1.7 }}>
+          <div style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.7 }}>
             לא צריך להיות מומחה/ית לפרומפטים. עונים על כמה שאלות, והמערכת בונה את המבנה מאחורי הקלעים.
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -61,16 +61,16 @@ export function CreateTourPanel({
 
       {tourOpen && activeStep && (
         <>
-          <div style={{ fontSize: 12, color: '#537488', fontWeight: 700 }}>
+          <div style={{ fontSize: 12, color: 'var(--accent-emphasis)', fontWeight: 700 }}>
             שלב {tourStepIndex + 1} מתוך {totalSteps}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#214b62' }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--sage-text)' }}>
             {activeStep.title}
           </div>
-          <div style={{ fontSize: 13, color: '#436276', lineHeight: 1.7 }}>
+          <div style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.7 }}>
             {activeStep.description}
           </div>
-          <div style={{ fontSize: 12, color: '#5f7c8e' }}>
+          <div style={{ fontSize: 12, color: 'var(--ink-faint)' }}>
             הטיפ: האזור הפעיל בעמוד מסומן בהדגשה.
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>

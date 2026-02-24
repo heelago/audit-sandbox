@@ -1,0 +1,287 @@
+.cardOuter {
+  position: relative;
+  overflow: hidden;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  padding: 28px 24px 24px;
+  display: grid;
+  gap: 16px;
+  animation: cardSlideIn 220ms ease-out;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.progressLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+
+.question {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.explanation {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+}
+
+.exampleToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.exampleToggle:hover {
+  color: var(--accent-emphasis);
+}
+
+.exampleBox {
+  border: 1px solid var(--sage-border);
+  background: var(--sage-surface);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--sage-text);
+  line-height: 1.7;
+  animation: fadeIn 180ms ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.impactTags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.impactTag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-emphasis);
+}
+
+.inputArea {
+  display: grid;
+  gap: 12px;
+}
+
+.navRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.navRow button {
+  min-width: 90px;
+}
+
+/* Selectable card grid */
+.selectGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.selectGrid[data-cols="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.selectGrid[data-cols="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 640px) {
+  .selectGrid[data-cols="2"],
+  .selectGrid[data-cols="3"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+.selectCard {
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms, box-shadow 120ms;
+  text-align: right;
+  display: grid;
+  gap: 6px;
+  font-family: var(--font-body);
+}
+
+.selectCard:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.selectCard[data-selected="true"] {
+  border-color: var(--accent);
+  background: var(--sage-surface);
+  box-shadow: 0 0 0 2px rgba(133, 168, 139, 0.18);
+}
+
+.selectCard:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--sage-border);
+}
+
+.selectCardLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.selectCardDesc {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.selectCardRecommended {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-emphasis);
+}
+
+/* Signal chips (amber-themed) */
+.signalChipsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.signalChip {
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+  font-family: var(--font-body);
+}
+
+.signalChip:hover {
+  border-color: var(--amber-border);
+}
+
+.signalChip[data-active="true"] {
+  border-color: var(--amber-border);
+  background: var(--amber-surface);
+  color: var(--amber-text);
+}
+
+.signalChip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--amber-border);
+}
+
+.signalDetail {
+  border: 1px solid var(--amber-border);
+  background: var(--amber-surface);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--amber-text);
+  display: grid;
+  gap: 4px;
+  animation: fadeIn 180ms ease-out;
+}
+
+.signalDetailLabel {
+  font-weight: 700;
+}
+
+/* Summary cards for review step */
+.summaryGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.summaryCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.summaryCardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.summaryCardTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+
+.summaryCardValue {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.summaryCardEdit {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.summaryCardEdit:hover {
+  background: var(--accent-soft);
+}

@@ -3,22 +3,22 @@
   left: 20px;
   bottom: 20px;
   z-index: 1100;
-  border: 1px solid rgba(48, 93, 120, 0.24);
-  background: linear-gradient(135deg, #f6fafc, #eaf4f8);
-  color: #21465d;
+  border: 1px solid rgba(111, 146, 119, 0.24);
+  background: linear-gradient(135deg, #f5f8f5, #e8f0ea);
+  color: #274530;
   border-radius: 999px;
   padding: 10px 16px;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
-  box-shadow: 0 10px 26px rgba(20, 50, 68, 0.14);
+  box-shadow: 0 10px 26px rgba(39, 69, 48, 0.14);
   cursor: pointer;
 }
 
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(24, 38, 48, 0.58);
+  background: rgba(24, 38, 30, 0.58);
   z-index: 1200;
   display: grid;
   place-items: center;
@@ -29,24 +29,24 @@
   width: min(860px, 100%);
   max-height: min(88vh, 920px);
   overflow: auto;
-  background: #f9fcfe;
-  border: 1px solid #d8e6ee;
+  background: #f5f8f5;
+  border: 1px solid #d8e4da;
   border-radius: 20px;
-  box-shadow: 0 26px 54px rgba(13, 35, 52, 0.22);
+  box-shadow: 0 26px 54px rgba(27, 52, 35, 0.22);
   padding: 22px;
-  color: #1f3442;
+  color: #274530;
 }
 
 .welcomeTitle {
   margin: 0;
   font-size: clamp(24px, 3.5vw, 34px);
   line-height: 1.2;
-  color: #1f3e52;
+  color: #274530;
 }
 
 .welcomeSub {
   margin-top: 10px;
-  color: #335a71;
+  color: #3f6847;
   font-size: 15px;
   line-height: 1.7;
 }
@@ -59,7 +59,7 @@
 }
 
 .stepCard {
-  border: 1px solid #d6e5ef;
+  border: 1px solid #d1dfd4;
   background: #ffffff;
   border-radius: 14px;
   padding: 12px;
@@ -69,28 +69,28 @@
 
 .stepIndex {
   font-size: 12px;
-  color: #537286;
+  color: #5a8563;
   font-weight: 700;
 }
 
 .stepTitle {
   font-size: 15px;
   font-weight: 800;
-  color: #1f3d52;
+  color: #274530;
   margin: 0;
 }
 
 .stepDesc {
   font-size: 13px;
-  color: #456276;
+  color: #4a7154;
   line-height: 1.65;
   margin: 0;
 }
 
 .checkboxWrap {
   margin-top: 14px;
-  border: 1px solid #d9e6ef;
-  background: #f5fafd;
+  border: 1px solid #d1dfd4;
+  background: #f0f5f1;
   border-radius: 12px;
   padding: 10px 12px;
   display: flex;
@@ -100,12 +100,12 @@
 
 .checkboxWrap input {
   margin-top: 2px;
-  accent-color: #2f789d;
+  accent-color: #6F9277;
 }
 
 .checkboxText {
   font-size: 13px;
-  color: #365a6f;
+  color: #3f6847;
   line-height: 1.6;
 }
 
@@ -119,9 +119,9 @@
 
 .btn {
   border-radius: 10px;
-  border: 1px solid #c8d8e4;
+  border: 1px solid #c5d6c9;
   background: #ffffff;
-  color: #2b5167;
+  color: #355e3e;
   padding: 8px 13px;
   font-family: var(--font-body);
   font-size: 13px;
@@ -130,8 +130,8 @@
 }
 
 .btnPrimary {
-  border: 1px solid #2f789d;
-  background: #2f789d;
+  border: 1px solid #6F9277;
+  background: #6F9277;
   color: #ffffff;
 }
 
@@ -150,7 +150,7 @@
 .helpTitle {
   margin: 0;
   font-size: 24px;
-  color: #1f3e52;
+  color: #274530;
 }
 
 .tabRow {
@@ -161,9 +161,9 @@
 }
 
 .tabBtn {
-  border: 1px solid #cad9e4;
+  border: 1px solid #c5d6c9;
   background: #ffffff;
-  color: #35566c;
+  color: #3f6847;
   border-radius: 999px;
   padding: 7px 12px;
   font-size: 12px;
@@ -173,14 +173,14 @@
 }
 
 .tabBtnActive {
-  border-color: #2f789d;
-  background: #e7f3fa;
-  color: #1f4d67;
+  border-color: #6F9277;
+  background: #e4f0e7;
+  color: #274530;
 }
 
 .helpPanel {
   margin-top: 14px;
-  border: 1px solid #d8e4ed;
+  border: 1px solid #d1dfd4;
   border-radius: 14px;
   background: #ffffff;
   padding: 14px;
@@ -192,7 +192,7 @@
   margin: 0;
   font-size: 14px;
   line-height: 1.8;
-  color: #35586d;
+  color: #3f6847;
 }
 
 .helpList {
@@ -205,17 +205,17 @@
 .helpList li {
   font-size: 13px;
   line-height: 1.7;
-  color: #3c6074;
+  color: #4a7154;
 }
 
 .policyBox {
-  border: 1px dashed #cddde8;
-  background: #f7fbfe;
+  border: 1px dashed #c5d6c9;
+  background: #f0f5f1;
   border-radius: 10px;
   padding: 10px;
   font-size: 13px;
   line-height: 1.7;
-  color: #446479;
+  color: #4a7154;
 }
 
 @media (max-width: 780px) {

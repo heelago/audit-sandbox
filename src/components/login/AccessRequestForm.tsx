@@ -4,6 +4,22 @@ import { useState } from 'react';
 import { useRecaptcha } from '@/hooks/useRecaptcha';
 import styles from '@/app/page.module.css';
 
+type AccessRequestResponse = {
+  success?: boolean;
+  message?: string;
+  email?: {
+    state?: 'queued' | 'failed';
+  };
+  error?: string;
+};
+
+const FALLBACK_ERROR_MESSAGE = 'שליחת ההרשמה נכשלה. נסו שוב בעוד כמה דקות.';
+const NETWORK_ERROR_MESSAGE = 'שליחת ההרשמה נכשלה. בדקו את החיבור ונסו שוב.';
+const SUCCESS_MESSAGE =
+  'נרשמת לבטא בהצלחה. קוד הגישה נשלח עכשיו למייל שהזנת.';
+const EMAIL_FAILED_MESSAGE =
+  'ההרשמה נקלטה, אבל שליחת הקוד למייל נכשלה. נסו שוב בעוד דקה או כתבו ל-contact@h2eapps.com.';
+
 export function AccessRequestForm() {
   const [requestLoading, setRequestLoading] = useState(false);
   const [requestStatus, setRequestStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -40,17 +56,22 @@ export function AccessRequestForm() {
           captchaToken: captchaToken || undefined,
         }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as AccessRequestResponse;
       if (!res.ok) {
         setRequestStatus({
           type: 'error',
-          text: data.error || 'שליחת הבקשה נכשלה. נסו שוב בעוד כמה דקות.',
+          text: data.error || FALLBACK_ERROR_MESSAGE,
         });
         return;
       }
+
+      const successText =
+        data.email?.state === 'failed'
+          ? EMAIL_FAILED_MESSAGE
+          : data.message || SUCCESS_MESSAGE;
       setRequestStatus({
         type: 'success',
-        text: 'הבקשה נשלחה בהצלחה. לאחר אישור תקבלו קוד גישה אישי.',
+        text: successText,
       });
       setRequestForm({
         fullName: '',
@@ -64,7 +85,7 @@ export function AccessRequestForm() {
     } catch {
       setRequestStatus({
         type: 'error',
-        text: 'שליחת הבקשה נכשלה. בדקו את החיבור ונסו שוב.',
+        text: NETWORK_ERROR_MESSAGE,
       });
     } finally {
       setRequestLoading(false);
@@ -73,9 +94,12 @@ export function AccessRequestForm() {
 
   return (
     <div className={styles.accessCard} id="request-access">
-      <p className={styles.accessTitle}>בקשת גישה למרצים</p>
+      <p className={styles.accessTitle}>הרשמה מהירה לבטא למרצים</p>
       <p className={styles.accessSubtitle}>
-        מרצים שרוצים להתנסות במערכת יכולים להשאיר פרטים. לאחר אישור תקבלו קוד גישה אישי.
+        ההרשמה אוטומטית: קוד גישה נשלח מיד למייל. בשלב הבטא אפשר ליצור עד 5 מטלות דוגמה.
+        נשמח לפידבק על UX, לוגיקה ופיצ׳רים שחשובים לתחום שלך. לגרסה יציבה לכיתה:
+        {' '}
+        <strong>contact@h2eapps.com</strong>
       </p>
       <form className={styles.accessForm} onSubmit={submitAccessRequest}>
         <div className={styles.accessHoneypotField} aria-hidden="true">
@@ -123,7 +147,7 @@ export function AccessRequestForm() {
           />
           <textarea
             className={styles.accessTextarea}
-            placeholder="מה תרצו לבדוק בדמו? (אופציונלי)"
+            placeholder="מה תרצה/י לבדוק בבטא? (אופציונלי)"
             value={requestForm.message}
             onChange={(e) => setRequestForm((prev) => ({ ...prev, message: e.target.value }))}
           />
@@ -133,7 +157,7 @@ export function AccessRequestForm() {
           className={styles.accessSubmit}
           disabled={requestLoading || !requestForm.fullName.trim() || !requestForm.email.trim()}
         >
-          {requestLoading ? 'שולח...' : 'שליחת בקשת גישה'}
+          {requestLoading ? 'שולח...' : 'קבלת קוד בטא למייל'}
         </button>
         {requestStatus && (
           <p className={requestStatus.type === 'success' ? styles.accessStatusSuccess : styles.accessStatusError}>
