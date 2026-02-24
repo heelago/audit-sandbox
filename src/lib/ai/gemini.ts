@@ -510,69 +510,79 @@ export async function runMultiAgentAuditWithGemini(params: {
       error: null,
     });
 
-    // Run one supplementary agent to find organic issues not already covered
     const alreadyCoveredFindings = formatPlantedFindingsSummary(planted);
-    const supplementaryAgent = SUPPLEMENTARY_AUDIT_AGENT;
-    const supplementaryPrompt = buildAuditUserPrompt({
-      agent: supplementaryAgent,
-      params,
-      maxFindingsPerAgent: 3,
-      alreadyCoveredFindings,
-    });
 
-    try {
-      const raw = await callGeminiText({
-        model,
-        systemInstruction: AUDIT_SYSTEM_INSTRUCTION,
-        userPrompt: supplementaryPrompt,
-        temperature: 0.2,
-        maxOutputTokens: 1800,
+    // Determine which additional agents to run:
+    // - If instructor configured custom agents, run those (they may target free-text pitfalls)
+    // - Otherwise, run the single supplementary agent
+    const hasCustomAgents = Array.isArray(params.customAgents) && params.customAgents.length > 0;
+    const additionalAgents = hasCustomAgents
+      ? resolveAuditAgents(params.customAgents)
+      : [SUPPLEMENTARY_AUDIT_AGENT];
+    const additionalMaxFindings = hasCustomAgents ? maxFindingsPerAgent : 3;
+
+    for (const agent of additionalAgents) {
+      const agentPrompt = buildAuditUserPrompt({
+        agent,
+        params,
+        maxFindingsPerAgent: additionalMaxFindings,
+        alreadyCoveredFindings,
       });
 
-      type AgentResponse = {
-        agentSummary?: unknown;
-        findings?: unknown;
-      };
-      const parsed = parseJsonFromModel<AgentResponse>(raw);
-      const summary = toNonEmptyString(parsed?.agentSummary) ?? 'No agent summary.';
+      try {
+        const raw = await callGeminiText({
+          model,
+          systemInstruction: AUDIT_SYSTEM_INSTRUCTION,
+          userPrompt: agentPrompt,
+          temperature: 0.2,
+          maxOutputTokens: 1800,
+        });
 
-      const findings = Array.isArray(parsed?.findings)
-        ? parsed.findings
-            .map((entry) => {
-              const value = asObject(entry);
-              if (!value) return null;
-              const description = toNonEmptyString(value.description);
-              if (!description) return null;
-              return {
-                severity: normalizeSeverity(value.severity),
-                category: toNonEmptyString(value.category) ?? 'analysis',
-                description,
-                idealResponse: toNonEmptyString(value.idealResponse),
-                flaggedText: toNonEmptyString(value.flaggedText),
-                confidence: normalizeConfidence(value.confidence),
-                passSource: `agent:${supplementaryAgent.id}`,
-              } as AgentFinding;
-            })
-            .filter((item): item is AgentFinding => Boolean(item))
-        : [];
+        type AgentResponse = {
+          agentSummary?: unknown;
+          findings?: unknown;
+        };
+        const parsed = parseJsonFromModel<AgentResponse>(raw);
+        const summary = toNonEmptyString(parsed?.agentSummary) ?? 'No agent summary.';
 
-      agentRuns.push({
-        agentId: supplementaryAgent.id,
-        agentName: supplementaryAgent.name,
-        summary,
-        findings: findings.slice(0, 3),
-        error: null,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Agent execution failed.';
-      errors.push(`${supplementaryAgent.name}: ${message}`);
-      agentRuns.push({
-        agentId: supplementaryAgent.id,
-        agentName: supplementaryAgent.name,
-        summary: 'Agent run failed.',
-        findings: [],
-        error: message,
-      });
+        const findings = Array.isArray(parsed?.findings)
+          ? parsed.findings
+              .map((entry) => {
+                const value = asObject(entry);
+                if (!value) return null;
+                const description = toNonEmptyString(value.description);
+                if (!description) return null;
+                return {
+                  severity: normalizeSeverity(value.severity),
+                  category: toNonEmptyString(value.category) ?? 'analysis',
+                  description,
+                  idealResponse: toNonEmptyString(value.idealResponse),
+                  flaggedText: toNonEmptyString(value.flaggedText),
+                  confidence: normalizeConfidence(value.confidence),
+                  passSource: `agent:${agent.id}`,
+                } as AgentFinding;
+              })
+              .filter((item): item is AgentFinding => Boolean(item))
+          : [];
+
+        agentRuns.push({
+          agentId: agent.id,
+          agentName: agent.name,
+          summary,
+          findings: findings.slice(0, additionalMaxFindings),
+          error: null,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Agent execution failed.';
+        errors.push(`${agent.name}: ${message}`);
+        agentRuns.push({
+          agentId: agent.id,
+          agentName: agent.name,
+          summary: 'Agent run failed.',
+          findings: [],
+          error: message,
+        });
+      }
     }
   } else {
     // --- Legacy path: run all 4 agents independently ---
