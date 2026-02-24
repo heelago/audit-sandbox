@@ -9,7 +9,7 @@ interface WizardStepCardProps {
   totalSteps: number;
   question: string;
   explanation: string;
-  example?: string;
+  example?: string | string[];
   impactLabels?: string[];
   children: ReactNode;
   onPrev: () => void;
@@ -91,7 +91,13 @@ export function WizardStepCard({
               {showExample ? 'הסתר דוגמה ▲' : 'הצג דוגמה ▼'}
             </button>
             {showExample && (
-              <div className={styles.exampleBox}>{example}</div>
+              <div className={styles.exampleBox}>
+                {Array.isArray(example)
+                  ? example.map((line, i) => (
+                      <p key={i} className={styles.exampleLine}>{line}</p>
+                    ))
+                  : example}
+              </div>
             )}
           </>
         )}

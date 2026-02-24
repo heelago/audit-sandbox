@@ -53,117 +53,42 @@
 
 .showcaseHero {
   margin: 0 0 14px;
-  text-align: start;
-  border: 1px solid #e2ceb7;
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 90% 12%, #8b5e3c22 0, transparent 42%),
-    linear-gradient(180deg, #fffaf3 0%, #fff4e7 100%);
-  padding: 14px;
-}
-
-.showcaseHeroTitle {
-  margin: 0 0 6px;
-  color: #4e3825;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.showcaseHeroSubtitle {
-  margin: 0 0 10px;
-  color: #6d5440;
-  font-size: 12px;
-  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .showcaseCta {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
+  flex: 1;
   border-radius: 10px;
-  padding: 11px 14px;
+  padding: 10px 14px;
   text-align: center;
   text-decoration: none;
   background: #8b5e3c;
   color: #fff9f4;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   border: 1px solid #7a4e2f;
-  box-shadow: 0 8px 18px rgba(107, 70, 42, 0.18);
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  transition: opacity 0.12s ease;
 }
 
 .showcaseCta:hover {
-  transform: translateY(-1px);
-  opacity: 0.96;
-}
-
-.showcaseHeroActions {
-  display: grid;
-  gap: 8px;
+  opacity: 0.92;
 }
 
 .showcaseSecondaryCta {
-  width: 100%;
   border-radius: 10px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   text-align: center;
   background: #fffaf3;
   color: #5d432d;
   font-family: var(--font-body);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   border: 1px solid #d7c5b2;
   cursor: pointer;
-}
-
-/* ---- Action Grid ---- */
-
-.actionGrid {
-  margin: 0 0 14px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.actionCard {
-  border: 1px solid #e5d8c9;
-  border-radius: 12px;
-  background: #fff;
-  padding: 12px;
-  text-align: start;
-  display: grid;
-  gap: 8px;
-}
-
-.actionCardTitle {
-  margin: 0;
-  font-size: 13px;
-  color: #4e3825;
-  font-weight: 700;
-}
-
-.actionCardText {
-  margin: 0;
-  color: #6d5440;
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.actionCardLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #d7c5b2;
-  border-radius: 8px;
-  background: #fffaf4;
-  color: #5d432d;
-  text-decoration: none;
-  padding: 8px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
+  white-space: nowrap;
 }
 
 /* ---- Access Request ---- */
@@ -463,8 +388,13 @@
 /* ---- Responsive ---- */
 
 @media (max-width: 520px) {
-  .actionGrid {
-    grid-template-columns: 1fr;
+  .showcaseHero {
+    flex-direction: column;
+  }
+  .showcaseCta,
+  .showcaseSecondaryCta {
+    width: 100%;
+    box-sizing: border-box;
   }
   .accessGrid {
     grid-template-columns: 1fr;

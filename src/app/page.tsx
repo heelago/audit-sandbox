@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { SearchIcon } from '@/components/icons';
 import { he } from '@/locale/he';
 import { ShowcaseHero } from '@/components/login/ShowcaseHero';
-import { ActionGrid } from '@/components/login/ActionGrid';
 import { AccessRequestForm } from '@/components/login/AccessRequestForm';
 import { LoginForm } from '@/components/login/LoginForm';
 import { PhilosophyModal } from '@/components/login/PhilosophyModal';
@@ -25,7 +24,6 @@ export default function LoginPage() {
         <p className={styles.loginDesc}>{he.app.description}</p>
 
         <ShowcaseHero onOpenPhilosophy={() => setPhilosophyOpen(true)} />
-        <ActionGrid />
         <AccessRequestForm />
         <LoginForm />
       </div>

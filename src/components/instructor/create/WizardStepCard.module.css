@@ -75,6 +75,14 @@
   animation: fadeIn 180ms ease-out;
 }
 
+.exampleLine {
+  margin: 0 0 6px;
+}
+
+.exampleLine:last-child {
+  margin-bottom: 0;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

@@ -13,7 +13,7 @@ import {
 } from '@/lib/ai/prompt-config';
 
 const GEMINI_API_BASE = process.env.GEMINI_API_BASE_URL?.trim() || 'https://generativelanguage.googleapis.com/v1beta';
-const DEFAULT_GENERATION_MODEL = 'gemini-3-flash-preview';
+const DEFAULT_GENERATION_MODEL = 'gemini-3-pro-preview';
 const DEFAULT_AUDIT_MODEL = 'gemini-3-pro-preview';
 const DEFAULT_MAX_FINDINGS_PER_AGENT = 5;
 const MAX_CUSTOM_AGENTS = 8;
@@ -84,12 +84,13 @@ type FlawExtractionResult = {
 
 function extractFlawTags(rawText: string): FlawExtractionResult {
   const flaws: ExtractedFlawTag[] = [];
-  const regex = /<flaw\s+id="([^"]+)"\s+type="([^"]+)"\s+severity="([^"]+)">([\s\S]*?)<\/flaw>/g;
+  const regex = /<flaw\s+(?:id="([^"]+)"\s+)?type="([^"]+)"\s+severity="([^"]+)">([\s\S]*?)<\/flaw>/g;
 
   let match;
+  let autoIndex = 0;
   while ((match = regex.exec(rawText)) !== null) {
     flaws.push({
-      id: match[1],
+      id: match[1] ?? `auto_${autoIndex++}`,
       type: match[2],
       severity: match[3],
       flaggedText: match[4].trim(),
