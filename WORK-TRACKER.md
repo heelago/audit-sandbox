@@ -97,12 +97,11 @@ Stabilize instructor onboarding and first-use experience (email + welcome + guid
 | T81 | Prune App Hosting deploy payload (prod+demo alignment) | done | Synced `firebase.demo.json` ignore rules with prod baseline and added excludes for `prisma/dev.db`, `prisma/dev.db-journal`, `*.pdf` across deploy ignore files. |
 | T82 | Add commit-aware smart App Hosting deploy wrapper | done | Added `scripts/deploy/firebase-deploy-apphosting-smart.ps1` + package scripts; supports skip-on-no-runtime-change, `-DryRun`, and `-Force`. |
 | T83 | Seed smart deploy state with first successful live rollout | done | Ran `deploy:apphosting:smart`; rollout complete at `2625ed6`; state file seeded and re-run correctly skips. |
-| T84 | Sage color migration + Frank Ruhl Libre typography | in-progress | `tokens.css`: accent→#85A88B, info→sage, focus-ring→sage, font-display→Frank Ruhl Libre. `tokens.ts` synced. `globals.css` added font import + sage selection color. Onboarding hub CSS migrated from blue to sage. |
-| T85 | Create wizard "dating app" sub-step flow | done | Replaced 4-step wizard with 11 sub-step conversational flow. New components: WizardStepCard, DisciplinePresetGrid, StrategyCards. Hidden prompt with auto-build on submit. Advanced toggle for power users. |
+| T84 | Sage color migration + Frank Ruhl Libre typography | done | `tokens.css`: accent→#85A88B, info→sage, focus-ring→sage, font-display→Frank Ruhl Libre. `tokens.ts` synced. `globals.css` added font import + sage selection color. Onboarding hub CSS migrated from blue to sage. Deployed + pushed. |
+| T85 | Create wizard "dating app" sub-step flow | done | Replaced 4-step wizard with 11 sub-step conversational flow. New components: WizardStepCard, DisciplinePresetGrid, StrategyCards. Hidden prompt with auto-build on submit. Advanced toggle for power users. Deployed + pushed. |
+| T86 | QA pass on wizard + registration flow audit | done | Fixed RTL arrow, summary truncation, section rendering safety, slide direction. Extracted shared `getBetaAssignmentLimit()` to `src/lib/beta-config.ts`. Updated QA checklist for 11-step flow. Registration audit: all security layers (honeypot, timing, reCAPTCHA, rate-limit, sanitization) verified working. Beta cap correct. |
 
 ## Next Actions
-1. Commit sage color migration files (`tokens.css`, `tokens.ts`, `globals.css`) and deploy.
-2. Execute the manual checklist in `QA-CHECKLIST-CREATE-WIZARD-2026-02-24.md` and capture any remaining UI regressions.
-3. Validate end-to-end auto-registration flow in production: submit form -> receive code email -> login works without admin action.
-4. Confirm the beta cap UX in create-flow messaging and API error handling under both default and env override (`BETA_ASSIGNMENT_LIMIT`).
-5. Re-test `pnpm run build` in a clean local shell to confirm whether `spawn EPERM` is environmental.
+1. Manual browser verification of wizard UX on live site (code QA complete, visual pending).
+2. End-to-end production registration test: submit form → receive code email → login → create assignment → hit beta cap.
+3. Deploy latest QA fixes to production.

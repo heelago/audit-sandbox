@@ -985,7 +985,7 @@ export default function CreateAssignmentPage() {
                 </button>
               ))}
             </div>
-            {guidedSectionItems.map((section, index) => (
+            {activeSections.map((section, index) => (
               <div
                 key={section.id}
                 style={{
@@ -1132,9 +1132,9 @@ export default function CreateAssignmentPage() {
       { label: 'משימה', value: guidedTask.trim() || '—', editStep: 2 },
       { label: 'כשלים מתוכננים', value: signalNames || 'לא נבחרו', editStep: 3 },
       { label: 'חלקים', value: `${guidedSectionCount}`, editStep: 4 },
-      { label: 'קריטריונים', value: guidedCriteria.trim() ? `${guidedCriteria.trim().slice(0, 80)}...` : '—', editStep: 5 },
+      { label: 'קריטריונים', value: guidedCriteria.trim() ? (guidedCriteria.trim().length > 80 ? `${guidedCriteria.trim().slice(0, 80)}...` : guidedCriteria.trim()) : '—', editStep: 5 },
       { label: 'אסטרטגיה', value: strategyLabel, editStep: 6 },
-      { label: 'מקורות', value: guidedSources.trim() ? `${guidedSources.trim().slice(0, 60)}...` : 'ללא', editStep: 7 },
+      { label: 'מקורות', value: guidedSources.trim() ? (guidedSources.trim().length > 60 ? `${guidedSources.trim().slice(0, 60)}...` : guidedSources.trim()) : 'ללא', editStep: 7 },
       { label: 'אורך', value: `${guidedWordLimit} מילים`, editStep: 8 },
       { label: 'גרסאות', value: `${studentCount}`, editStep: 9 },
     ];
@@ -1292,7 +1292,7 @@ export default function CreateAssignmentPage() {
                 marginBottom: 24,
               }}
             >
-              &larr; {he.instructor.dashboard}
+              &rarr; {he.instructor.dashboard}
             </button>
 
             <h1

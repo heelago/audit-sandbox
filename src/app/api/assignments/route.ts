@@ -10,16 +10,7 @@ import {
   serializePlannedStudentCodes,
 } from '@/lib/assignment-roster';
 import { sanitizeOptionalTextInput } from '@/lib/security';
-
-const DEFAULT_BETA_ASSIGNMENT_LIMIT = 5;
-
-function getBetaAssignmentLimit(): number {
-  const raw = process.env.BETA_ASSIGNMENT_LIMIT?.trim();
-  if (!raw) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed)) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
-  return Math.max(1, Math.min(200, Math.floor(parsed)));
-}
+import { getBetaAssignmentLimit } from '@/lib/beta-config';
 
 export async function GET() {
   const session = await getSession();

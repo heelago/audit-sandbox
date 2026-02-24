@@ -1,4 +1,5 @@
 ﻿import { getFirebaseAdminFirestore } from '@/lib/firebase-admin';
+import { getBetaAssignmentLimit } from '@/lib/beta-config';
 
 export interface InstructorOnboardingEmailInput {
   fullName: string;
@@ -19,15 +20,6 @@ export interface InstructorOnboardingDeliveryStatus {
 }
 
 const DEFAULT_COLLECTION = 'mail';
-const DEFAULT_BETA_ASSIGNMENT_LIMIT = 5;
-
-function getBetaAssignmentLimit(): number {
-  const raw = process.env.BETA_ASSIGNMENT_LIMIT?.trim();
-  if (!raw) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed)) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
-  return Math.max(1, Math.min(200, Math.floor(parsed)));
-}
 
 function asObject(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object') return null;
