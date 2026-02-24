@@ -26,9 +26,12 @@ import {
 } from '@/lib/form-utils';
 import { WizardSidebar, type CreateWizardStep } from '@/components/instructor/create/WizardSidebar';
 import { CreateTourPanel, type CreateTourStep } from '@/components/instructor/create/CreateTourPanel';
-import { GuidedBuilderContent } from '@/components/instructor/create/GuidedBuilderContent';
+import { WizardStepCard } from '@/components/instructor/create/WizardStepCard';
+import { DisciplinePresetGrid } from '@/components/instructor/create/DisciplinePresetGrid';
+import { StrategyCards } from '@/components/instructor/create/StrategyCards';
 import { TemplatePanel } from '@/components/instructor/create/TemplatePanel';
 import { AdvancedPromptFields } from '@/components/instructor/create/AdvancedPromptFields';
+import cardStyles from '@/components/instructor/create/WizardStepCard.module.css';
 
 /* ------------------------------------------------------------------ */
 /* Constants                                                           */
@@ -43,13 +46,6 @@ const DEFAULT_PLANTED_SIGNALS: PlantedSignalId[] = [
   'causal_leap',
 ];
 const DEFAULT_PLANTED_PRESET_ID: DisciplinePresetId = 'general_academic';
-const SAFE_FLAW_LIBRARY_HE = [
-  'החלת מקור מחוץ להקשר: שימוש במקור מוכר באופן שסותר את טענתו המקורית.',
-  'נתון מיושן או Cherry-picked: שימוש בנתון אמיתי אך לא עדכני כאילו הוא מייצג את המצב הנוכחי.',
-  'פסקת ניסוח מרשימה אך ריקה: טקסט שנשמע אקדמי אך כמעט לא מוסיף תוכן או הוכחה.',
-  'הכללה שגויה: הצגת תופעה מקומית/תרבותית כאמת אוניברסלית.',
-  'קפיצה סיבתית: מעבר מקורלציה לטענת סיבתיות ללא ביסוס מספק.',
-];
 
 const CREATE_TOUR_STEPS: CreateTourStep[] = [
   {
@@ -59,84 +55,138 @@ const CREATE_TOUR_STEPS: CreateTourStep[] = [
     targetId: 'tour-title',
   },
   {
-    id: 'tour-builder',
-    title: 'בונה מטלה מודרך',
-    description: 'כאן עוברים לשפה פשוטה: המערכת שואלת שאלות ועוזרת לבנות את מבנה המטלה מאחורי הקלעים.',
-    targetId: 'tour-builder',
-    openPromptEditor: true,
+    id: 'tour-signals',
+    title: 'כשלים מתוכננים',
+    description: 'בוחרים אילו כשלים פדגוגיים לשתול בטקסט. הכשלים ניתנים לזיהוי ולביקורת.',
+    targetId: 'tour-signals',
   },
   {
-    id: 'tour-sections',
-    title: 'חלוקה לעד 3 חלקים',
-    description: 'אפשר לבנות מטלה עם כמה שאלות נפרדות ולתת לכל חלק מטרות וקריטריונים משלו.',
-    targetId: 'tour-sections',
-    openPromptEditor: true,
-    openGuidedBuilder: true,
-  },
-  {
-    id: 'tour-criteria',
-    title: 'קריטריונים ומוקדי קושי',
-    description: 'מגדירים מה חייב להופיע בתשובה ומה חשוב שהסטודנטים ילמדו לזהות ולבדוק.',
-    targetId: 'tour-criteria',
-    openPromptEditor: true,
-    openGuidedBuilder: true,
-  },
-  {
-    id: 'tour-build-prompt',
-    title: 'בניית פרומפט אוטומטית',
-    description: 'בלחיצה אחת המערכת מייצרת פרומפט מובנה מהמידע שהזנת.',
-    targetId: 'tour-build-prompt',
-    openPromptEditor: true,
-    openGuidedBuilder: true,
-  },
-  {
-    id: 'tour-prompt',
-    title: 'בדיקה ועדכון',
-    description: 'כאן רואים את הטקסט שנבנה, עורכים ידנית ושומרים תבניות לשימוש חוזר.',
-    targetId: 'tour-prompt',
-    openPromptEditor: true,
-  },
-  {
-    id: 'tour-student-count',
-    title: 'כמות גרסאות',
-    description: 'מחליטים כמה טקסטים המערכת תיצור לצורך תרגול, כיול והשוואה.',
-    targetId: 'tour-student-count',
+    id: 'tour-settings',
+    title: 'הגדרות יצירה',
+    description: 'בוחרים אסטרטגיית יצירה, מקורות ואורך הטקסט.',
+    targetId: 'tour-settings',
   },
   {
     id: 'tour-submit',
-    title: 'יצירת מטלה',
-    description: 'כאן מסיימים: שומרים את המטלה ועוברים ללוח הבקרה להמשך התהליך.',
+    title: 'סקירה ויצירה',
+    description: 'בודקים את כל הבחירות ויוצרים את המטלה.',
     targetId: 'tour-submit',
   },
 ];
 
-const CREATE_WIZARD_STEPS: CreateWizardStep[] = [
+/* ------------------------------------------------------------------ */
+/* Sub-step definitions                                                */
+/* ------------------------------------------------------------------ */
+
+type SubStepDef = {
+  mainStep: number;
+  question: string;
+  explanation: string;
+  example?: string;
+  impactLabels?: string[];
+};
+
+const SUB_STEPS: SubStepDef[] = [
+  // Step 0: Context & Topic
   {
-    id: 'wizard-basics',
-    label: '1. פתיחה',
-    description: 'מגדירים כותרת למטלה ומה הסטודנט/ית אמור/ה לעשות.',
-    targetId: 'tour-title',
+    mainStep: 0,
+    question: 'איך קוראים למטלה הזו?',
+    explanation: 'כותרת קצרה וברורה שתסביר מה המטלה. הכותרת מופיעה גם בממשק הסטודנט/ית.',
+    example: 'למשל: ניתוח ביקורתי של מקורות בתחום הפסיכולוגיה החברתית',
+    impactLabels: ['יצירת טקסט ✓', 'ביקורת ✓'],
   },
   {
-    id: 'wizard-builder',
-    label: '2. בניית המטלה',
-    description: 'עובדים עם הבונה המודרך: עד 3 חלקים, קריטריונים, מקורות ומוקדי קושי.',
-    targetId: 'tour-builder',
-    openPromptEditor: true,
-    openGuidedBuilder: true,
+    mainStep: 0,
+    question: 'באיזה תחום אקדמי?',
+    explanation: 'בחירת תחום תתאים אוטומטית את סוג הכשלים המתוכננים. ניתן לשנות בהמשך.',
+    impactLabels: ['כשלים מתוכננים ✓'],
   },
   {
-    id: 'wizard-prompt',
-    label: '3. טיוב פרומפט',
-    description: 'בודקים את הפרומפט המלא, תבניות ואסטרטגיית יצירה.',
-    targetId: 'tour-prompt',
-    openPromptEditor: true,
+    mainStep: 0,
+    question: 'מה הסטודנט/ית צריך/ה לעשות?',
+    explanation: 'תארו ב-2-3 משפטים את המשימה המרכזית: ניתוח, השוואה, ביקורת, או יישום.',
+    example: 'למשל: נתחו את הטענה לפי שני מקורות קורס ובצעו השוואה ביקורתית.',
+    impactLabels: ['יצירת טקסט ✓', 'ביקורת ✓'],
+  },
+  // Step 1: Planted Signals
+  {
+    mainStep: 1,
+    question: 'אילו כשלים לשתול?',
+    explanation: 'בחרו כשלים פדגוגיים שיישתלו בטקסט. הסטודנטים ילמדו לזהות ולנמק אותם.',
+    impactLabels: ['יצירת טקסט ✓', 'ביקורת — זיהוי מועדף ✓'],
   },
   {
-    id: 'wizard-final',
-    label: '4. יצירה',
-    description: 'קובעים כמה גרסאות ליצור ומסיימים ביצירת המטלה.',
-    targetId: 'tour-submit',
+    mainStep: 1,
+    question: 'לכמה חלקים לחלק?',
+    explanation: 'אפשר לחלק את המטלה עד 3 חלקים עם שאלות נפרדות. חלק אחד מספיק לרוב המטלות.',
+    example: 'למשל: חלק 1 — ניתוח טענה, חלק 2 — ביקורת מקורות',
+    impactLabels: ['יצירת טקסט ✓', 'ביקורת ✓'],
+  },
+  {
+    mainStep: 1,
+    question: 'מה חייב להופיע בתשובה טובה?',
+    explanation: 'קריטריונים שמגדירים תשובה איכותית. כל קריטריון ישפיע על יצירת הטקסט וגם על הביקורת.',
+    example: 'למשל: ביסוס טענה מרכזית, ציטוט משני מקורות, הסתייגות מתודולוגית',
+    impactLabels: ['יצירת טקסט ✓', 'ביקורת ✓'],
+  },
+  // Step 2: Settings
+  {
+    mainStep: 2,
+    question: 'איזה סוג טקסט ליצור?',
+    explanation: 'האסטרטגיה קובעת איך הכשלים נשתלים בטקסט. מומלץ "שגיאות מאוזנות" כשיש כשלים מתוכננים.',
+    impactLabels: ['יצירת טקסט ✓'],
+  },
+  {
+    mainStep: 2,
+    question: 'יש מקורות שהטקסט צריך להתייחס אליהם?',
+    explanation: 'הוסיפו מקורות קורס, מאמרים או ספרים. הטקסט שנוצר יתייחס אליהם באופן ישיר.',
+    example: 'למשל: Kahneman, D. (2011). Thinking, Fast and Slow.',
+    impactLabels: ['יצירת טקסט ✓', 'ביקורת ✓'],
+  },
+  {
+    mainStep: 2,
+    question: 'מה אורך הטקסט הרצוי?',
+    explanation: 'טווח מומלץ: 300-700 מילים. למטלות עמוסות אפשר להעלות עד 1200.',
+    impactLabels: ['יצירת טקסט ✓'],
+  },
+  {
+    mainStep: 2,
+    question: 'כמה גרסאות טקסט ליצור?',
+    explanation: 'מספר הטקסטים שהמערכת תיצור. מומלץ 3 לפחות לצורך כיול, השוואה ותרגול.',
+    impactLabels: ['יצירת טקסט ✓'],
+  },
+  // Step 3: Review & Create
+  {
+    mainStep: 3,
+    question: 'הכול מוכן — סקירה אחרונה',
+    explanation: 'בדקו את כל הבחירות לפני יצירת המטלה. אפשר לחזור לכל שלב ולשנות.',
+  },
+];
+
+const MAIN_STEPS: CreateWizardStep[] = [
+  {
+    id: 'step-context',
+    label: '1. הקשר ונושא',
+    description: 'כותרת, תחום ומשימת הסטודנט/ית.',
+    subStepCount: 3,
+  },
+  {
+    id: 'step-signals',
+    label: '2. כשלים מתוכננים',
+    description: 'בחירת כשלים, חלוקה לחלקים, קריטריונים.',
+    subStepCount: 3,
+  },
+  {
+    id: 'step-settings',
+    label: '3. הגדרות יצירה',
+    description: 'אסטרטגיה, מקורות, אורך וגרסאות.',
+    subStepCount: 4,
+  },
+  {
+    id: 'step-review',
+    label: '4. סקירה ויצירה',
+    description: 'בדיקה אחרונה ויצירת המטלה.',
+    subStepCount: 1,
   },
 ];
 
@@ -152,7 +202,6 @@ export default function CreateAssignmentPage() {
 
   /* Form fields */
   const [title, setTitle] = useState('');
-  const [promptText, setPromptText] = useState('');
   const [courseContext, setCourseContext] = useState('');
   const [requirements, setRequirements] = useState('');
   const [knownPitfalls, setKnownPitfalls] = useState('');
@@ -168,9 +217,7 @@ export default function CreateAssignmentPage() {
   const [selectedPresetId, setSelectedPresetId] = useState<DisciplinePresetId>(DEFAULT_PLANTED_PRESET_ID);
   const [presetPinnedByUser, setPresetPinnedByUser] = useState(false);
 
-  /* Guided builder */
-  const [showPromptEditor, setShowPromptEditor] = useState(false);
-  const [showGuidedBuilder, setShowGuidedBuilder] = useState(true);
+  /* Guided builder fields */
   const [guidedTask, setGuidedTask] = useState('');
   const [guidedCriteria, setGuidedCriteria] = useState('');
   const [guidedSectionCount, setGuidedSectionCount] = useState(1);
@@ -180,8 +227,6 @@ export default function CreateAssignmentPage() {
   const [guidedObstacles, setGuidedObstacles] = useState('');
   const [guidedSources, setGuidedSources] = useState('');
   const [guidedWordLimit, setGuidedWordLimit] = useState(500);
-  const [guidedMessage, setGuidedMessage] = useState('');
-  const [brainstormPrompt, setBrainstormPrompt] = useState('');
 
   /* Templates */
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
@@ -190,12 +235,30 @@ export default function CreateAssignmentPage() {
   const [templateMessage, setTemplateMessage] = useState('');
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
-  /* Tour & wizard */
+  /* Advanced mode */
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  // promptText is now built at submit time — but we keep it for advanced mode
+  const [promptText, setPromptText] = useState('');
+
+  /* Tour */
   const [tourOpen, setTourOpen] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
-  const [wizardStepIndex, setWizardStepIndex] = useState(0);
+
+  /* Sub-step wizard */
+  const [globalSubStep, setGlobalSubStep] = useState(0);
   const [isNarrowScreen, setIsNarrowScreen] = useState(false);
   const tourQuery = searchParams.get('tour');
+
+  /* Derived: current main step from global sub-step */
+  const currentMainStep = useMemo(() => SUB_STEPS[globalSubStep]?.mainStep ?? 0, [globalSubStep]);
+  const currentSubStepWithinMain = useMemo(() => {
+    const mainIdx = SUB_STEPS[globalSubStep]?.mainStep ?? 0;
+    let count = 0;
+    for (let i = 0; i < globalSubStep; i++) {
+      if (SUB_STEPS[i].mainStep === mainIdx) count++;
+    }
+    return count;
+  }, [globalSubStep]);
 
   /* ---------------------------------------------------------------- */
   /* Effects                                                           */
@@ -256,28 +319,57 @@ export default function CreateAssignmentPage() {
     return CREATE_TOUR_STEPS[Math.min(tourStepIndex, CREATE_TOUR_STEPS.length - 1)];
   }, [tourOpen, tourStepIndex]);
 
-  const activeWizardStep = useMemo(() => {
-    if (CREATE_WIZARD_STEPS.length === 0) return null;
-    return CREATE_WIZARD_STEPS[Math.min(wizardStepIndex, CREATE_WIZARD_STEPS.length - 1)];
-  }, [wizardStepIndex]);
+  const activeMainStep = useMemo(() => {
+    return MAIN_STEPS[Math.min(currentMainStep, MAIN_STEPS.length - 1)];
+  }, [currentMainStep]);
 
-  const wizardStepCompletion = useMemo(
-    () => [
-      title.trim().length > 0,
-      guidedTask.trim().length > 0 ||
-        guidedSectionItems.some((section) => section.task.trim().length > 0),
-      promptText.trim().length > 0 &&
-        (evaluationCriteria.trim().length > 0 ||
-          knownPitfalls.trim().length > 0 ||
-          selectedPlantedSignals.length > 0),
-      title.trim().length > 0 && promptText.trim().length > 0 && studentCount >= 1,
-    ],
-    [title, guidedTask, guidedSectionItems, promptText, evaluationCriteria, knownPitfalls, selectedPlantedSignals, studentCount]
+  const activeSections = useMemo(
+    () => guidedSectionItems.slice(0, guidedSectionCount),
+    [guidedSectionItems, guidedSectionCount]
+  );
+  const allSectionTasksFilled = useMemo(
+    () => activeSections.every((section) => section.task.trim().length > 0),
+    [activeSections]
+  );
+  const hasAnyCriteria = useMemo(
+    () =>
+      guidedCriteria.trim().length > 0 ||
+      activeSections.some((section) => section.criteria.trim().length > 0),
+    [guidedCriteria, activeSections]
+  );
+  const hasMinimumRequiredFields = useMemo(
+    () =>
+      title.trim().length > 0 &&
+      guidedTask.trim().length > 0 &&
+      allSectionTasksFilled &&
+      hasAnyCriteria &&
+      Number.isInteger(studentCount) &&
+      studentCount >= 1 &&
+      studentCount <= 50,
+    [title, guidedTask, allSectionTasksFilled, hasAnyCriteria, studentCount]
   );
 
-  const wizardCompletedCount = useMemo(
-    () => wizardStepCompletion.filter(Boolean).length,
-    [wizardStepCompletion]
+  const stepCompletion = useMemo(
+    () => [
+      title.trim().length > 0 && guidedTask.trim().length > 0,
+      selectedPlantedSignals.length > 0 || guidedCriteria.trim().length > 0,
+      generationStrategy.length > 0 && studentCount >= 1 && studentCount <= 50,
+      hasMinimumRequiredFields,
+    ],
+    [
+      title,
+      guidedTask,
+      selectedPlantedSignals,
+      guidedCriteria,
+      generationStrategy,
+      studentCount,
+      hasMinimumRequiredFields,
+    ]
+  );
+
+  const completedCount = useMemo(
+    () => stepCompletion.filter(Boolean).length,
+    [stepCompletion]
   );
 
   const presetSuggestion = useMemo(
@@ -304,30 +396,10 @@ export default function CreateAssignmentPage() {
       tourQuery === '1' ||
       window.localStorage.getItem(CREATE_TOUR_AUTOSTART_KEY) === '1';
     if (!shouldAutoStart) return;
-    setShowPromptEditor(true);
-    setShowGuidedBuilder(true);
     setTourStepIndex(0);
     setTourOpen(true);
     window.localStorage.removeItem(CREATE_TOUR_AUTOSTART_KEY);
   }, [tourQuery]);
-
-  useEffect(() => {
-    if (!activeCreateTourStep) return;
-    if (activeCreateTourStep.openPromptEditor && !showPromptEditor) {
-      setShowPromptEditor(true);
-      return;
-    }
-    if (activeCreateTourStep.openGuidedBuilder && !showGuidedBuilder) {
-      setShowGuidedBuilder(true);
-      return;
-    }
-    const target = document.querySelector<HTMLElement>(
-      `[data-tour-id="${activeCreateTourStep.targetId}"]`
-    );
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-    }
-  }, [activeCreateTourStep, showPromptEditor, showGuidedBuilder]);
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 980px)');
@@ -341,31 +413,41 @@ export default function CreateAssignmentPage() {
     return () => media.removeListener(onChange);
   }, []);
 
-  useEffect(() => {
-    if (tourOpen || !activeWizardStep) return;
-    if (activeWizardStep.openPromptEditor && !showPromptEditor) {
-      setShowPromptEditor(true);
-      return;
-    }
-    if (activeWizardStep.openGuidedBuilder && !showGuidedBuilder) {
-      setShowGuidedBuilder(true);
-      return;
-    }
-    const target = document.querySelector<HTMLElement>(
-      `[data-tour-id="${activeWizardStep.targetId}"]`
-    );
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-    }
-  }, [activeWizardStep, tourOpen, showPromptEditor, showGuidedBuilder]);
-
   /* ---------------------------------------------------------------- */
-  /* Tour / wizard navigation                                          */
+  /* Navigation                                                        */
   /* ---------------------------------------------------------------- */
 
+  function goToSubStep(index: number) {
+    setGlobalSubStep(Math.max(0, Math.min(SUB_STEPS.length - 1, index)));
+  }
+
+  function nextSubStep() {
+    if (globalSubStep < SUB_STEPS.length - 1) {
+      setGlobalSubStep(globalSubStep + 1);
+    }
+  }
+
+  function prevSubStep() {
+    if (globalSubStep > 0) {
+      setGlobalSubStep(globalSubStep - 1);
+    }
+  }
+
+  function jumpToMainStep(mainIndex: number) {
+    // Find the first sub-step of the target main step
+    const target = SUB_STEPS.findIndex(s => s.mainStep === mainIndex);
+    if (target >= 0) setGlobalSubStep(target);
+  }
+
+  function moveMainStep(direction: 'next' | 'prev') {
+    const nextMain = direction === 'next' ? currentMainStep + 1 : currentMainStep - 1;
+    if (nextMain >= 0 && nextMain < MAIN_STEPS.length) {
+      jumpToMainStep(nextMain);
+    }
+  }
+
+  /* Tour navigation */
   function startTour() {
-    setShowPromptEditor(true);
-    setShowGuidedBuilder(true);
     setTourStepIndex(0);
     setTourOpen(true);
   }
@@ -382,74 +464,11 @@ export default function CreateAssignmentPage() {
     });
   }
 
-  function jumpWizardStep(stepIndex: number) {
-    setWizardStepIndex(Math.max(0, Math.min(CREATE_WIZARD_STEPS.length - 1, stepIndex)));
-  }
-
-  function moveWizardStep(direction: 'next' | 'prev') {
-    setWizardStepIndex((current) => {
-      if (direction === 'prev') return Math.max(0, current - 1);
-      return Math.min(CREATE_WIZARD_STEPS.length - 1, current + 1);
-    });
-  }
-
-  const activeWizardStepId = activeWizardStep?.id ?? 'wizard-basics';
-  const showWizardBasics = tourOpen || activeWizardStepId === 'wizard-basics';
-  const showWizardBuilder = tourOpen || activeWizardStepId === 'wizard-builder';
-  const showWizardPrompt = tourOpen || activeWizardStepId === 'wizard-prompt';
-  const showWizardFinal = tourOpen || activeWizardStepId === 'wizard-final';
-
-  function getWizardStageCardStyle(stepIndex: number): React.CSSProperties {
-    const isDone = wizardStepCompletion[stepIndex];
-    const isActive = wizardStepIndex === stepIndex;
-    if (isDone) {
-      return { border: '1px solid #85A88B', background: '#F4F8F4', boxShadow: '0 1px 0 rgba(133,168,139,0.14)' };
-    }
-    if (isActive) {
-      return { border: '1px solid #B85D3B', background: '#FBF2EE', boxShadow: '0 0 0 2px rgba(184, 93, 59, 0.12)' };
-    }
-    return { border: '1px solid var(--border)', background: 'var(--card)', boxShadow: '0 1px 0 rgba(0,0,0,0.02)' };
-  }
-
-  function tourTargetStyle(targetId: string): React.CSSProperties | undefined {
-    if (activeCreateTourStep?.targetId === targetId) {
-      return {
-        boxShadow: '0 0 0 3px rgba(47, 120, 157, 0.36)',
-        borderRadius: 12,
-        background: 'linear-gradient(180deg, rgba(231, 244, 251, 0.72), rgba(255, 255, 255, 0.9))',
-        transition: 'box-shadow 0.2s ease',
-      };
-    }
-    if (!tourOpen && activeWizardStep?.targetId === targetId) {
-      return {
-        boxShadow: '0 0 0 2px rgba(47, 120, 157, 0.22)',
-        borderRadius: 12,
-        background: 'linear-gradient(180deg, rgba(245, 250, 253, 0.92), rgba(255, 255, 255, 0.96))',
-        transition: 'box-shadow 0.2s ease',
-      };
-    }
-    return undefined;
-  }
-
-  function renderTourHint(targetId: string): React.ReactNode {
-    if (!activeCreateTourStep || activeCreateTourStep.targetId !== targetId) return null;
-    return (
-      <div
-        style={{
-          marginTop: 8,
-          fontSize: 12,
-          color: '#1f5672',
-          background: '#eaf6fc',
-          border: '1px solid #c9e4f2',
-          borderRadius: 8,
-          padding: '6px 8px',
-          lineHeight: 1.6,
-        }}
-      >
-        הדרכה: {activeCreateTourStep.description}
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!tourOpen) return;
+    const targetMainStep = Math.max(0, Math.min(MAIN_STEPS.length - 1, tourStepIndex));
+    jumpToMainStep(targetMainStep);
+  }, [tourOpen, tourStepIndex]);
 
   /* ---------------------------------------------------------------- */
   /* Template handlers                                                 */
@@ -480,21 +499,22 @@ export default function CreateAssignmentPage() {
       setSelectedPresetId(DEFAULT_PLANTED_PRESET_ID);
       setPresetPinnedByUser(false);
     }
-    setBrainstormPrompt('');
     setStudentCount(template.studentCount);
+    setShowAdvanced(true);
   }
 
   function handleSaveTemplate() {
     const name = templateName.trim();
     if (!name) { setTemplateMessage(he.instructor.templateNameRequired); return; }
-    if (!promptText.trim()) { setTemplateMessage(he.instructor.templatePromptRequired); return; }
+    const builtPrompt = buildPromptText();
+    if (!builtPrompt.trim()) { setTemplateMessage(he.instructor.templatePromptRequired); return; }
     const now = new Date().toISOString();
     const existing = templates.find((item) => item.name.toLowerCase() === name.toLowerCase());
     const nextTemplate: PromptTemplate = {
       id: existing?.id ?? `tpl_${Date.now()}`,
       name,
       title: title.trim(),
-      promptText: promptText.trim(),
+      promptText: builtPrompt.trim(),
       courseContext: courseContext.trim(),
       requirements: requirements.trim(),
       knownPitfalls: upsertPlantedSignalBlock(knownPitfalls.trim(), selectedPlantedSignals),
@@ -521,7 +541,6 @@ export default function CreateAssignmentPage() {
     const template = templates.find((item) => item.id === selectedTemplateId);
     if (!template) { setTemplateMessage(he.instructor.templateNotFound); return; }
     applyTemplate(template);
-    setShowPromptEditor(true);
     setTemplateMessage(he.instructor.templateLoaded);
   }
 
@@ -609,7 +628,7 @@ export default function CreateAssignmentPage() {
   }
 
   /* ---------------------------------------------------------------- */
-  /* Guided builder handlers                                           */
+  /* Guided builder helpers                                            */
   /* ---------------------------------------------------------------- */
 
   function updateGuidedSection(id: string, field: keyof GuidedSection, value: string) {
@@ -653,123 +672,18 @@ export default function CreateAssignmentPage() {
     setGuidedObstacles((prev) => mergeUniqueLines(prev, presetHints));
     setKnownPitfalls((prev) => mergeUniqueLines(prev, presetHints));
     setGenerationStrategy('balanced_errors');
-    setGuidedMessage(`הוחל פריסט תחומי: ${preset.label}.`);
-  }
-
-  function handleApplySuggestedPreset() {
-    const suggested = getPlantedSignalPresetById(presetSuggestion.presetId);
-    if (!suggested) return;
-    setPresetPinnedByUser(true);
-    setSelectedPresetId(suggested.id);
-    setSelectedPlantedSignals(suggested.signalIds);
-    setGuidedMessage(
-      `הוחלה הצעה אוטומטית: ${suggested.label}${
-        presetSuggestion.matchedKeywords.length > 0
-          ? ` (זיהוי לפי: ${presetSuggestion.matchedKeywords.join(', ')})`
-          : ''
-      }.`
-    );
-  }
-
-  function handleResumeAutoPresetSuggestion() {
-    setPresetPinnedByUser(false);
-    setGuidedMessage('זיהוי אוטומטי של פריסט תחומי הופעל מחדש.');
-  }
-
-  function handleSelectPreset(presetId: DisciplinePresetId) {
-    setPresetPinnedByUser(true);
-    setSelectedPresetId(presetId);
   }
 
   /* ---------------------------------------------------------------- */
-  /* Prompt building                                                   */
+  /* Prompt building — pure function                                   */
   /* ---------------------------------------------------------------- */
 
-  function handleBuildBrainstormPrompt() {
-    const selectedPreset = getPlantedSignalPresetById(selectedPresetId);
-    const normalizedSections = guidedSectionItems
-      .map((section, index) => ({
-        ...section,
-        order: index + 1,
-        title: compactMultiline(section.title),
-        task: compactMultiline(section.task),
-        criteria: compactMultiline(section.criteria),
-      }))
-      .filter((section) => section.task);
+  function buildPromptText(): string {
+    // If user edited prompt directly in advanced mode, use that
+    if (showAdvanced && promptText.trim()) {
+      return promptText.trim();
+    }
 
-    const signalBullets = selectedPlantedSignals
-      .map((id) => {
-        const signal = PLANTED_SIGNAL_LIBRARY.find((item) => item.id === id);
-        if (!signal) return null;
-        return `- ${signal.label}: ${signal.generationHint}`;
-      })
-      .filter((line): line is string => Boolean(line))
-      .join('\n');
-
-    const sectionsBlock =
-      normalizedSections.length > 0
-        ? normalizedSections
-            .map((section) =>
-              [`חלק ${section.order}: ${section.title || `חלק ${section.order}`}`, `שאלה: ${section.task}`, section.criteria ? `קריטריונים: ${section.criteria}` : '']
-                .filter(Boolean)
-                .join('\n')
-            )
-            .join('\n\n')
-        : '- ללא חלוקה מפורשת לחלקים';
-
-    const prompt = [
-      'את/ה יועץ/ת פדגוגי/ת לקורס אקדמי.',
-      'הציע/י 10 מוקדי כשל ריאליסטיים אך בולטים לזיהוי סטודנטיאלי בטקסט AI.',
-      'הכשל צריך להיות "בעל ערך לימודי": ניתן לאימות, להסבר, ולהצעת תיקון.',
-      'עבור כל מוקד כשל החזר/י:',
-      '1) תיאור קצר של הכשל',
-      '2) למה סטודנטים נוטים לפספס אותו',
-      '3) איך לזהות אותו בטקסט',
-      '4) איך לתקן אותו',
-      '5) תגית קצרה (snake_case)',
-      '',
-      `נושא המטלה: ${title.trim() || 'לא הוגדר עדיין'}`,
-      `משימת הסטודנט/ית: ${guidedTask.trim() || 'לא הוגדרה עדיין'}`,
-      `קריטריונים כלליים: ${compactMultiline(guidedCriteria) || 'לא הוגדרו'}`,
-      `פריסט תחומי נבחר: ${selectedPreset?.label ?? 'ללא פריסט'}`,
-      '',
-      'מבנה המטלה:',
-      sectionsBlock,
-      '',
-      'מוקדי כשל רצויים שכבר נבחרו:',
-      signalBullets || '- אין בחירה ידנית כרגע',
-      '',
-      'הנחיה סגנונית:',
-      '- כלול לפחות הצעה אחת לפסקה רהוטה אך חלולה תוכנית (AI-ism).',
-      '- כלול לפחות הצעה אחת לביטחון יתר ללא ביסוס.',
-      '- שמור על כשלים ריאליסטיים ולא קריקטוריים.',
-      '- כתוב בעברית אקדמית קצרה וברורה.',
-    ].join('\n');
-
-    setBrainstormPrompt(prompt);
-    setGuidedMessage('נוצר פרומפט בריינסטורם למוקדי כשל. ניתן להעתיק ולהשתמש בו.');
-  }
-
-  function handleCopyBrainstormPrompt() {
-    if (!brainstormPrompt.trim()) return;
-    navigator.clipboard
-      .writeText(brainstormPrompt)
-      .then(() => setGuidedMessage('פרומפט הבריינסטורם הועתק ללוח.'))
-      .catch(() => setGuidedMessage('לא ניתן היה להעתיק אוטומטית. ניתן לסמן ולהעתיק ידנית.'));
-  }
-
-  function handleApplySafeFlawTemplate() {
-    const signalHints = summarizePlantedSignalHints(DEFAULT_PLANTED_SIGNALS, 'generation');
-    setPresetPinnedByUser(true);
-    setGuidedObstacles((prev) => mergeUniqueLines(prev, SAFE_FLAW_LIBRARY_HE));
-    setKnownPitfalls((prev) => mergeUniqueLines(prev, [...SAFE_FLAW_LIBRARY_HE, ...signalHints]));
-    setSelectedPlantedSignals(DEFAULT_PLANTED_SIGNALS);
-    setSelectedPresetId(DEFAULT_PLANTED_PRESET_ID);
-    setGenerationStrategy('balanced_errors');
-    setGuidedMessage('נוספה תבנית כשלים פדגוגיים + תגיות כשל נבחרות למצב יצירה עם כשלים.');
-  }
-
-  function handleBuildPromptFromGuide() {
     const normalizedSections = guidedSectionItems
       .map((section, index) => ({
         ...section,
@@ -779,15 +693,6 @@ export default function CreateAssignmentPage() {
         criteria: compactMultiline(section.criteria),
         pitfalls: compactMultiline(section.pitfalls),
       }));
-
-    if (normalizedSections.length === 0) {
-      setGuidedMessage('יש להוסיף לפחות חלק אחד עם שאלה לפני בניית הפרומפט.');
-      return;
-    }
-    if (normalizedSections.some((section) => !section.task)) {
-      setGuidedMessage('בכל חלק חייבת להיות לפחות שאלה אחת.');
-      return;
-    }
 
     const wordLimit = Math.max(150, Math.min(1200, Math.round(guidedWordLimit || 500)));
     const criteriaList = [
@@ -800,18 +705,21 @@ export default function CreateAssignmentPage() {
       ...summarizePlantedSignalHints(selectedPlantedSignals, 'generation'),
     ].filter(Boolean);
 
-    const sectionsBlock = `\n- המטלה מחולקת לחלקים. יש להתייחס לכל חלק בנפרד ולפי הסדר.\n${normalizedSections
-      .map((section) =>
-        [
-          `חלק ${section.order}: ${section.title || `חלק ${section.order}`}`,
-          `שאלת החלק: ${section.task}`,
-          section.criteria ? `קריטריונים לחלק: ${section.criteria}` : '',
-          section.pitfalls ? `מוקדי קושי רצויים לזיהוי: ${section.pitfalls}` : '',
-        ]
-          .filter(Boolean)
-          .join('\n')
-      )
-      .join('\n\n')}`;
+    const sectionsBlock = normalizedSections.some(s => s.task)
+      ? `\n- המטלה מחולקת לחלקים. יש להתייחס לכל חלק בנפרד ולפי הסדר.\n${normalizedSections
+          .filter(s => s.task)
+          .map((section) =>
+            [
+              `חלק ${section.order}: ${section.title || `חלק ${section.order}`}`,
+              `שאלת החלק: ${section.task}`,
+              section.criteria ? `קריטריונים לחלק: ${section.criteria}` : '',
+              section.pitfalls ? `מוקדי קושי רצויים לזיהוי: ${section.pitfalls}` : '',
+            ]
+              .filter(Boolean)
+              .join('\n')
+          )
+          .join('\n\n')}`
+      : '';
     const criteriaBlock = criteriaList.length > 0
       ? `\n- קריטריונים שחייבים להופיע בתשובה:\n${criteriaList.join('\n')}`
       : '';
@@ -831,7 +739,7 @@ export default function CreateAssignmentPage() {
       ? `\n- השתמש/י בהפניות למקורות על בסיס הרשימה הבאה בלבד, ככל שרלוונטי:\n${guidedSources.trim()}`
       : '';
 
-    const builtPrompt = [
+    return [
       `כתוב/כתבי תשובה אקדמית טבעית בעברית (RTL), עד ${wordLimit} מילים.`,
       'החזר/י טקסט תשובה בלבד ללא כותרות מערכת.',
       'אל תציין/י בשום אופן שהטקסט כולל אי-דיוקים או מלכודות.',
@@ -845,8 +753,32 @@ export default function CreateAssignmentPage() {
     ]
       .filter(Boolean)
       .join('\n');
+  }
+
+  function buildDerivedFields() {
+    const normalizedSections = guidedSectionItems
+      .map((section, index) => ({
+        ...section,
+        order: index + 1,
+        title: compactMultiline(section.title),
+        task: compactMultiline(section.task),
+        criteria: compactMultiline(section.criteria),
+        pitfalls: compactMultiline(section.pitfalls),
+      }));
+
+    const wordLimit = Math.max(150, Math.min(1200, Math.round(guidedWordLimit || 500)));
+    const criteriaList = [
+      compactMultiline(guidedCriteria),
+      ...normalizedSections.map((section) => section.criteria).filter(Boolean),
+    ].filter(Boolean);
+    const pitfallsList = [
+      compactMultiline(guidedObstacles),
+      ...normalizedSections.map((section) => section.pitfalls).filter(Boolean),
+      ...summarizePlantedSignalHints(selectedPlantedSignals, 'generation'),
+    ].filter(Boolean);
 
     const sectionBlueprintText = normalizedSections
+      .filter(s => s.task)
       .map((section) =>
         [
           `חלק ${section.order}: ${section.title || `חלק ${section.order}`}`,
@@ -859,29 +791,53 @@ export default function CreateAssignmentPage() {
       )
       .join('\n\n');
 
-    setPromptText(builtPrompt);
-    setRequirements(`עד ${wordLimit} מילים, עברית אקדמית טבעית, והחזרת טקסט תשובה בלבד.`);
-    setEvaluationCriteria(criteriaList.join('\n'));
-    setKnownPitfalls(upsertPlantedSignalBlock(pitfallsList.join('\n'), selectedPlantedSignals));
-    setReferenceMaterial(guidedSources.trim());
-    setSectionBlueprint(sectionBlueprintText);
-    if (pitfallsList.length > 0 || selectedPlantedSignals.length > 0) {
-      setGenerationStrategy('balanced_errors');
-    }
-    setGuidedMessage(he.instructor.guidedBuilt);
+    return {
+      requirements: `עד ${wordLimit} מילים, עברית אקדמית טבעית, והחזרת טקסט תשובה בלבד.`,
+      evaluationCriteria: criteriaList.join('\n'),
+      knownPitfalls: upsertPlantedSignalBlock(pitfallsList.join('\n'), selectedPlantedSignals),
+      referenceMaterial: guidedSources.trim(),
+      sectionBlueprint: sectionBlueprintText,
+    };
   }
 
   /* ---------------------------------------------------------------- */
   /* Submit                                                            */
   /* ---------------------------------------------------------------- */
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim() || !promptText.trim()) return;
+  async function handleSubmit(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!title.trim()) {
+      setError('יש להזין כותרת למטלה לפני יצירה.');
+      return;
+    }
+    if (!guidedTask.trim()) {
+      setError('יש לתאר את משימת הסטודנט/ית לפני יצירה.');
+      return;
+    }
+    if (!allSectionTasksFilled) {
+      setError('יש להשלים שאלה לכל חלק במטלה לפני יצירה.');
+      return;
+    }
+    if (!hasAnyCriteria) {
+      setError('יש להזין לפחות קריטריון אחד להערכה לפני יצירה.');
+      return;
+    }
+    if (!Number.isInteger(studentCount) || studentCount < 1 || studentCount > 50) {
+      setError('כמות גרסאות חייבת להיות בין 1 ל-50.');
+      return;
+    }
 
     setSubmitting(true);
     setError('');
-    const normalizedKnownPitfalls = upsertPlantedSignalBlock(knownPitfalls.trim(), selectedPlantedSignals);
+
+    // Build prompt and derived fields at submit time
+    const builtPrompt = buildPromptText();
+    const derived = buildDerivedFields();
+
+    const normalizedKnownPitfalls = upsertPlantedSignalBlock(
+      (showAdvanced ? knownPitfalls.trim() : derived.knownPitfalls),
+      selectedPlantedSignals
+    );
     const normalizedGenerationStrategy =
       selectedPlantedSignals.length > 0 && generationStrategy === 'natural'
         ? 'balanced_errors'
@@ -893,13 +849,13 @@ export default function CreateAssignmentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
-          promptText: promptText.trim(),
+          promptText: builtPrompt.trim(),
           courseContext: courseContext.trim() || undefined,
-          requirements: requirements.trim() || undefined,
+          requirements: (showAdvanced ? requirements.trim() : derived.requirements) || undefined,
           knownPitfalls: normalizedKnownPitfalls || undefined,
-          referenceMaterial: referenceMaterial.trim() || undefined,
-          sectionBlueprint: sectionBlueprint.trim() || undefined,
-          evaluationCriteria: evaluationCriteria.trim() || undefined,
+          referenceMaterial: (showAdvanced ? referenceMaterial.trim() : derived.referenceMaterial) || undefined,
+          sectionBlueprint: (showAdvanced ? sectionBlueprint.trim() : derived.sectionBlueprint) || undefined,
+          evaluationCriteria: (showAdvanced ? evaluationCriteria.trim() : derived.evaluationCriteria) || undefined,
           exemplarNotes: exemplarNotes.trim() || undefined,
           generationStrategy: normalizedGenerationStrategy,
           studentCount,
@@ -918,6 +874,375 @@ export default function CreateAssignmentPage() {
       setSubmitting(false);
     }
   }
+
+  /* ---------------------------------------------------------------- */
+  /* Signal detail expand state                                        */
+  /* ---------------------------------------------------------------- */
+  const [expandedSignal, setExpandedSignal] = useState<PlantedSignalId | null>(null);
+
+  /* ---------------------------------------------------------------- */
+  /* Render helpers                                                    */
+  /* ---------------------------------------------------------------- */
+
+  const currentDef = SUB_STEPS[globalSubStep];
+
+  function renderSubStepContent() {
+    switch (globalSubStep) {
+      // 0: Title
+      case 0:
+        return (
+          <Input
+            label={he.instructor.assignmentTitle}
+            helpTooltip="שם קצר וברור למטלה"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        );
+
+      // 1: Discipline preset
+      case 1:
+        return (
+          <DisciplinePresetGrid
+            selectedPresetId={selectedPresetId}
+            suggestedPresetId={presetSuggestion.presetId}
+            onSelect={(id) => handleApplyDisciplinePreset(id)}
+          />
+        );
+
+      // 2: Task description
+      case 2:
+        return (
+          <Textarea
+            label="תיאור המשימה"
+            helpTooltip="תארו במשפט-שניים מה הסטודנט/ית צריך/ה לעשות"
+            value={guidedTask}
+            onChange={(e) => setGuidedTask(e.target.value)}
+            placeholder="למשל: נתחו את הטענות במאמר X לפי שני קריטריונים..."
+            rows={4}
+          />
+        );
+
+      // 3: Planted signals
+      case 3:
+        return (
+          <>
+            <div className={cardStyles.signalChipsWrap}>
+              {PLANTED_SIGNAL_LIBRARY.map((signal) => {
+                const active = selectedPlantedSignals.includes(signal.id);
+                return (
+                  <button
+                    key={signal.id}
+                    type="button"
+                    className={cardStyles.signalChip}
+                    data-active={active ? 'true' : 'false'}
+                    onClick={() => {
+                      togglePlantedSignal(signal.id);
+                      setExpandedSignal(active ? null : signal.id);
+                    }}
+                  >
+                    {signal.label}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--ink-faint)' }}>
+              נבחרו: {selectedPlantedSignals.length} כשלים
+            </div>
+            {expandedSignal && (() => {
+              const signal = PLANTED_SIGNAL_LIBRARY.find(s => s.id === expandedSignal);
+              if (!signal) return null;
+              return (
+                <div className={cardStyles.signalDetail}>
+                  <div className={cardStyles.signalDetailLabel}>{signal.label}</div>
+                  <div>ביצירה: {signal.generationHint}</div>
+                  <div>בביקורת: {signal.auditHint}</div>
+                  <div>חומרה: {signal.defaultSeverity === 'critical' ? 'קריטי' : signal.defaultSeverity === 'moderate' ? 'בינוני' : 'קל'}</div>
+                </div>
+              );
+            })()}
+          </>
+        );
+
+      // 4: Sections
+      case 4:
+        return (
+          <>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[1, 2, 3].map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  className={cardStyles.selectCard}
+                  data-selected={guidedSectionCount === count ? 'true' : 'false'}
+                  data-selectable
+                  onClick={() => setGuidedSectionCountAndSync(count)}
+                  style={{ flex: 1, textAlign: 'center' }}
+                >
+                  <div className={cardStyles.selectCardLabel}>{count} {count === 1 ? 'חלק' : 'חלקים'}</div>
+                  <div className={cardStyles.selectCardDesc}>
+                    {count === 1 ? 'מטלה אחידה' : count === 2 ? 'שני חלקים נפרדים' : 'שלושה חלקים'}
+                  </div>
+                </button>
+              ))}
+            </div>
+            {guidedSectionItems.map((section, index) => (
+              <div
+                key={section.id}
+                style={{
+                  border: '1px solid var(--border-light)',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--card-hover)',
+                  padding: 12,
+                  display: 'grid',
+                  gap: 8,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
+                  חלק {index + 1}
+                </div>
+                <Input
+                  label="כותרת החלק"
+                  helpTooltip="למשל: שאלת תיאוריה, ניתוח מקרה"
+                  value={section.title}
+                  onChange={(e) => updateGuidedSection(section.id, 'title', e.target.value)}
+                  placeholder="למשל: ניתוח לפי תיאוריה X"
+                />
+                <Textarea
+                  label="שאלת החלק"
+                  helpTooltip="מה הסטודנט/ית צריך/ה לעשות בחלק הזה"
+                  value={section.task}
+                  onChange={(e) => updateGuidedSection(section.id, 'task', e.target.value)}
+                  placeholder="מה הסטודנט/ית צריך/ה לנתח בחלק הזה?"
+                  rows={3}
+                />
+                <Textarea
+                  label="קריטריונים לחלק (אופציונלי)"
+                  helpTooltip="מה חייב להופיע בתשובה טובה בחלק הזה"
+                  value={section.criteria}
+                  onChange={(e) => updateGuidedSection(section.id, 'criteria', e.target.value)}
+                  placeholder="למשל: הגדרה מדויקת של מושג, נימוק מבוסס מקור"
+                  rows={3}
+                />
+                <Textarea
+                  label="מוקדי קושי לחלק (אופציונלי)"
+                  helpTooltip="אילו טעויות נפוצות או בלבולים חשוב לשלב לזיהוי ביקורתי"
+                  value={section.pitfalls}
+                  onChange={(e) => updateGuidedSection(section.id, 'pitfalls', e.target.value)}
+                  placeholder="למשל: קפיצה סיבתית, הכללת יתר, מקור לא מאומת"
+                  rows={3}
+                />
+              </div>
+            ))}
+          </>
+        );
+
+      // 5: Evaluation criteria
+      case 5:
+        return (
+          <Textarea
+            label="קריטריונים להערכה"
+            helpTooltip="מה חייב להופיע בתשובה איכותית"
+            value={guidedCriteria}
+            onChange={(e) => setGuidedCriteria(e.target.value)}
+            placeholder="למשל: ביסוס טענה מרכזית, ציטוט משני מקורות, הסתייגות מתודולוגית"
+            rows={6}
+          />
+        );
+
+      // 6: Generation strategy
+      case 6:
+        return (
+          <StrategyCards
+            selected={generationStrategy}
+            hasPlantedSignals={selectedPlantedSignals.length > 0}
+            onChange={setGenerationStrategy}
+          />
+        );
+
+      // 7: Sources
+      case 7:
+        return (
+          <Textarea
+            label="מקורות קורס"
+            helpTooltip="מקורות שהטקסט צריך להתייחס אליהם"
+            value={guidedSources}
+            onChange={(e) => setGuidedSources(e.target.value)}
+            placeholder="רשימת מקורות — מאמרים, ספרים, פרקים"
+            rows={6}
+          />
+        );
+
+      // 8: Word limit
+      case 8:
+        return (
+          <div style={{ display: 'grid', gap: 8 }}>
+            <Input
+              label="אורך הטקסט (מילים)"
+              helpTooltip="טווח מומלץ: 300-700"
+              type="number"
+              value={guidedWordLimit}
+              onChange={(e) => setGuidedWordLimit(Number(e.target.value) || 500)}
+              min={150}
+              max={1200}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--ink-faint)' }}>
+              <span>150 — קצר</span>
+              <span>500 — ממוצע</span>
+              <span>1200 — ארוך</span>
+            </div>
+          </div>
+        );
+
+      // 9: Version count
+      case 9:
+        return (
+          <Input
+            label="כמות גרסאות"
+            helpTooltip="כמה טקסטים לייצר"
+            type="number"
+            value={studentCount}
+            onChange={(e) => setStudentCount(Number(e.target.value) || 1)}
+            min={1}
+            max={50}
+          />
+        );
+
+      // 10: Review & Create
+      case 10:
+        return renderSummary();
+
+      default:
+        return null;
+    }
+  }
+
+  function renderSummary() {
+    const presetLabel = getPlantedSignalPresetById(selectedPresetId)?.label ?? 'כללי';
+    const signalNames = selectedPlantedSignals
+      .map(id => PLANTED_SIGNAL_LIBRARY.find(s => s.id === id)?.label)
+      .filter(Boolean)
+      .join(', ');
+    const strategyLabel =
+      generationStrategy === 'balanced_errors' ? 'שגיאות מאוזנות' :
+      generationStrategy === 'natural' ? 'טבעי' : 'אמת קפדנית';
+
+    const summaryItems: { label: string; value: string; editStep: number }[] = [
+      { label: 'כותרת', value: title.trim() || '—', editStep: 0 },
+      { label: 'תחום', value: presetLabel, editStep: 1 },
+      { label: 'משימה', value: guidedTask.trim() || '—', editStep: 2 },
+      { label: 'כשלים מתוכננים', value: signalNames || 'לא נבחרו', editStep: 3 },
+      { label: 'חלקים', value: `${guidedSectionCount}`, editStep: 4 },
+      { label: 'קריטריונים', value: guidedCriteria.trim() ? `${guidedCriteria.trim().slice(0, 80)}...` : '—', editStep: 5 },
+      { label: 'אסטרטגיה', value: strategyLabel, editStep: 6 },
+      { label: 'מקורות', value: guidedSources.trim() ? `${guidedSources.trim().slice(0, 60)}...` : 'ללא', editStep: 7 },
+      { label: 'אורך', value: `${guidedWordLimit} מילים`, editStep: 8 },
+      { label: 'גרסאות', value: `${studentCount}`, editStep: 9 },
+    ];
+
+    return (
+      <>
+        <div className={cardStyles.summaryGrid}>
+          {summaryItems.map((item) => (
+            <div key={item.label} className={cardStyles.summaryCard}>
+              <div className={cardStyles.summaryCardContent}>
+                <div className={cardStyles.summaryCardTitle}>{item.label}</div>
+                <div className={cardStyles.summaryCardValue}>{item.value}</div>
+              </div>
+              <button
+                type="button"
+                className={cardStyles.summaryCardEdit}
+                onClick={() => goToSubStep(item.editStep)}
+              >
+                עריכה
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Advanced toggle */}
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--ink-faint)',
+            fontSize: 12,
+            cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
+            padding: '4px 0',
+            textAlign: 'right',
+          }}
+        >
+          {showAdvanced ? 'הסתר אפשרויות מתקדמות ▲' : 'אפשרויות מתקדמות — רוב המשתמשים לא צריכים ▼'}
+        </button>
+
+        {showAdvanced && (
+          <div style={{ display: 'grid', gap: 14, border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', padding: 14, background: 'var(--card-hover)' }}>
+            <TemplatePanel
+              templateName={templateName}
+              selectedTemplateId={selectedTemplateId}
+              templates={templates}
+              templateMessage={templateMessage}
+              importInputRef={importInputRef}
+              onTemplateNameChange={setTemplateName}
+              onSelectedTemplateIdChange={setSelectedTemplateId}
+              onSave={handleSaveTemplate}
+              onLoad={handleLoadTemplate}
+              onDelete={handleDeleteTemplate}
+              onExport={handleExportTemplates}
+              onImportFile={handleImportTemplatesFile}
+            />
+            <AdvancedPromptFields
+              promptText={promptText}
+              courseContext={courseContext}
+              requirements={requirements}
+              knownPitfalls={knownPitfalls}
+              referenceMaterial={referenceMaterial}
+              sectionBlueprint={sectionBlueprint}
+              evaluationCriteria={evaluationCriteria}
+              exemplarNotes={exemplarNotes}
+              generationStrategy={generationStrategy}
+              tourTargetStyle={() => undefined}
+              renderTourHint={() => null}
+              onPromptTextChange={setPromptText}
+              onCourseContextChange={setCourseContext}
+              onRequirementsChange={setRequirements}
+              onKnownPitfallsChange={setKnownPitfalls}
+              onReferenceMaterialChange={setReferenceMaterial}
+              onSectionBlueprintChange={setSectionBlueprint}
+              onEvaluationCriteriaChange={setEvaluationCriteria}
+              onExemplarNotesChange={setExemplarNotes}
+              onGenerationStrategyChange={setGenerationStrategy}
+            />
+          </div>
+        )}
+      </>
+    );
+  }
+
+  /* Can move forward? */
+  const canGoNext = useMemo(() => {
+    switch (globalSubStep) {
+      case 0: return title.trim().length > 0;
+      case 2: return guidedTask.trim().length > 0;
+      case 4: return allSectionTasksFilled;
+      case 5: return hasAnyCriteria;
+      case 9: return Number.isInteger(studentCount) && studentCount >= 1 && studentCount <= 50;
+      case 10: return hasMinimumRequiredFields && !submitting;
+      default: return true; // All other steps are optional
+    }
+  }, [
+    globalSubStep,
+    title,
+    guidedTask,
+    allSectionTasksFilled,
+    hasAnyCriteria,
+    studentCount,
+    hasMinimumRequiredFields,
+    submitting,
+  ]);
 
   /* ---------------------------------------------------------------- */
   /* Render                                                            */
@@ -942,330 +1267,97 @@ export default function CreateAssignmentPage() {
           }}
         >
           <WizardSidebar
-            steps={CREATE_WIZARD_STEPS}
+            steps={MAIN_STEPS}
             isNarrowScreen={isNarrowScreen}
-            wizardStepIndex={wizardStepIndex}
-            wizardStepCompletion={wizardStepCompletion}
-            wizardCompletedCount={wizardCompletedCount}
-            activeWizardStep={activeWizardStep}
-            onJumpStep={jumpWizardStep}
-            onMoveStep={moveWizardStep}
+            mainStep={currentMainStep}
+            subStep={currentSubStepWithinMain}
+            stepCompletion={stepCompletion}
+            completedCount={completedCount}
+            activeStep={activeMainStep}
+            onJumpStep={jumpToMainStep}
+            onMoveStep={moveMainStep}
           />
 
           <div style={{ flex: 1, minWidth: 0, maxWidth: isNarrowScreen ? '100%' : 780 }}>
-        {/* Back link */}
-        <button
-          onClick={() => router.push('/instructor')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--accent)',
-            cursor: 'pointer',
-            fontSize: 14,
-            fontFamily: 'inherit',
-            padding: 0,
-            marginBottom: 24,
-          }}
-        >
-          &larr; {he.instructor.dashboard}
-        </button>
-
-        <h1
-          style={{
-            fontSize: 26,
-            fontWeight: 700,
-            color: 'var(--ink)',
-            margin: '0 0 32px 0',
-          }}
-        >
-          {he.instructor.createAssignment}
-        </h1>
-
-        <CreateTourPanel
-          tourOpen={tourOpen}
-          tourStepIndex={tourStepIndex}
-          totalSteps={CREATE_TOUR_STEPS.length}
-          activeStep={activeCreateTourStep}
-          onStart={startTour}
-          onClose={closeTour}
-          onMove={moveTourStep}
-        />
-
-        {error && (
-          <div
-            style={{
-              background: 'var(--error-soft)',
-              color: 'var(--error)',
-              padding: '12px 16px',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: 20,
-              fontSize: 14,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {/* Step 1: Title */}
-            {showWizardBasics && (
-              <div
-                data-tour-id="tour-title"
-                style={{
-                  borderRadius: 'var(--radius-md)',
-                  padding: 14,
-                  display: 'grid',
-                  gap: 10,
-                  ...getWizardStageCardStyle(0),
-                  ...tourTargetStyle('tour-title'),
-                }}
-              >
-                {!tourOpen && (
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#6a4a3c' }}>
-                    שלב 1 מתוך 4: פתיחה והגדרת המשימה
-                  </div>
-                )}
-                <Input
-                  label={he.instructor.assignmentTitle}
-                  helpTooltip="שם קצר וברור, לדוגמה: ניתוח ביקורתי של מקורות בתחום X"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
-                />
-                {renderTourHint('tour-title')}
-                {!tourOpen && (
-                  <div style={{ marginTop: 8, fontSize: 12, color: 'var(--ink-soft)' }}>
-                    השלב הבא: בניית מטלה מודרכת והגדרת הקריטריונים.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Steps 2-3: Builder & Prompt */}
-            {(showWizardBuilder || showWizardPrompt) && (
-              <div
-              data-tour-id="tour-builder"
+            {/* Back link */}
+            <button
+              onClick={() => router.push('/instructor')}
               style={{
-                borderRadius: 'var(--radius-md)',
-                padding: 16,
-                display: 'grid',
-                gap: 14,
-                ...getWizardStageCardStyle(showWizardBuilder ? 1 : 2),
-                ...tourTargetStyle('tour-builder'),
+                background: 'none',
+                border: 'none',
+                color: 'var(--accent)',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontFamily: 'inherit',
+                padding: 0,
+                marginBottom: 24,
               }}
             >
-              {!tourOpen && (
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#6a4a3c' }}>
-                  {showWizardBuilder
-                    ? 'שלב 2 מתוך 4: תכנון פדגוגי ובניית המטלה'
-                    : 'שלב 3 מתוך 4: טיוב פרומפט ושדות מתקדמים'}
-                </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>
-                    {he.instructor.promptEditor}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--ink-soft)', marginTop: 2 }}>
-                    {he.instructor.promptEditorHint}
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setShowPromptEditor((prev) => !prev)}
-                >
-                  {showPromptEditor ? he.instructor.hidePromptEditor : he.instructor.editPrompt}
-                </Button>
-              </div>
-              {renderTourHint('tour-builder')}
-              {!tourOpen && showWizardBuilder && (
-                <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                  שלב זה מתמקד בבנייה פדגוגית: חלקים, קריטריונים, מוקדי קושי ומקורות.
-                </div>
-              )}
-              {!tourOpen && showWizardPrompt && (
-                <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                  שלב זה מתמקד בטיוב טקסט הפרומפט, תבניות ושדות מתקדמים לפני יצירה.
-                </div>
-              )}
+              &larr; {he.instructor.dashboard}
+            </button>
 
-              {!showPromptEditor && (
-                <div
-                  style={{
-                    border: '1px dashed var(--border)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '10px 12px',
-                    background: 'var(--card-hover)',
-                    fontSize: 13,
-                    color: 'var(--ink-soft)',
-                    lineHeight: 1.7,
-                  }}
-                >
-                  {promptText.trim()
-                    ? `${promptText.trim().slice(0, 180)}${promptText.trim().length > 180 ? '...' : ''}`
-                    : he.instructor.promptEmpty}
-                </div>
-              )}
+            <h1
+              style={{
+                fontSize: 26,
+                fontFamily: 'var(--font-display)',
+                fontWeight: 700,
+                color: 'var(--ink)',
+                margin: '0 0 32px 0',
+              }}
+            >
+              {he.instructor.createAssignment}
+            </h1>
 
-              {showPromptEditor && (
-                <div style={{ display: 'grid', gap: 14 }}>
-                  {showWizardBuilder && (
-                    <div
-                      style={{
-                        border: '1px solid var(--border-light)',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'var(--card-hover)',
-                        padding: 12,
-                        display: 'grid',
-                        gap: 10,
-                      }}
-                    >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-                          {he.instructor.guidedBuilder}
-                        </div>
-                        <div style={{ fontSize: 12, color: 'var(--ink-soft)' }}>
-                          {he.instructor.guidedBuilderHint}
-                        </div>
-                      </div>
-                      <Button type="button" variant="secondary" onClick={() => setShowGuidedBuilder((prev) => !prev)}>
-                        {showGuidedBuilder ? he.instructor.guidedBuilderHide : he.instructor.guidedBuilderShow}
-                      </Button>
-                    </div>
+            <CreateTourPanel
+              tourOpen={tourOpen}
+              tourStepIndex={tourStepIndex}
+              totalSteps={CREATE_TOUR_STEPS.length}
+              activeStep={activeCreateTourStep}
+              onStart={startTour}
+              onClose={closeTour}
+              onMove={moveTourStep}
+            />
 
-                    {showGuidedBuilder && (
-                      <GuidedBuilderContent
-                        guidedSectionCount={guidedSectionCount}
-                        guidedSectionItems={guidedSectionItems}
-                        maxSections={MAX_GUIDED_SECTIONS}
-                        guidedTask={guidedTask}
-                        guidedCriteria={guidedCriteria}
-                        guidedObstacles={guidedObstacles}
-                        guidedSources={guidedSources}
-                        guidedWordLimit={guidedWordLimit}
-                        guidedMessage={guidedMessage}
-                        brainstormPrompt={brainstormPrompt}
-                        selectedPlantedSignals={selectedPlantedSignals}
-                        selectedPresetId={selectedPresetId}
-                        presetSuggestion={presetSuggestion}
-                        presetPinnedByUser={presetPinnedByUser}
-                        tourTargetStyle={tourTargetStyle}
-                        renderTourHint={renderTourHint}
-                        onSetSectionCount={setGuidedSectionCountAndSync}
-                        onUpdateSection={updateGuidedSection}
-                        onSetGuidedTask={setGuidedTask}
-                        onSetGuidedCriteria={setGuidedCriteria}
-                        onSetGuidedObstacles={setGuidedObstacles}
-                        onSetGuidedSources={setGuidedSources}
-                        onSetGuidedWordLimit={setGuidedWordLimit}
-                        onSetBrainstormPrompt={setBrainstormPrompt}
-                        onBuildPrompt={handleBuildPromptFromGuide}
-                        onApplySafeFlawTemplate={handleApplySafeFlawTemplate}
-                        onBuildBrainstormPrompt={handleBuildBrainstormPrompt}
-                        onCopyBrainstormPrompt={handleCopyBrainstormPrompt}
-                        onToggleSignal={togglePlantedSignal}
-                        onApplyPreset={handleApplyDisciplinePreset}
-                        onApplySuggested={handleApplySuggestedPreset}
-                        onResumeAuto={handleResumeAutoPresetSuggestion}
-                        onSelectPreset={handleSelectPreset}
-                      />
-                    )}
-                    </div>
-                  )}
-
-                  {showWizardPrompt && (
-                    <>
-                      <TemplatePanel
-                        templateName={templateName}
-                        selectedTemplateId={selectedTemplateId}
-                        templates={templates}
-                        templateMessage={templateMessage}
-                        importInputRef={importInputRef}
-                        onTemplateNameChange={setTemplateName}
-                        onSelectedTemplateIdChange={setSelectedTemplateId}
-                        onSave={handleSaveTemplate}
-                        onLoad={handleLoadTemplate}
-                        onDelete={handleDeleteTemplate}
-                        onExport={handleExportTemplates}
-                        onImportFile={handleImportTemplatesFile}
-                      />
-
-                      <AdvancedPromptFields
-                        promptText={promptText}
-                        courseContext={courseContext}
-                        requirements={requirements}
-                        knownPitfalls={knownPitfalls}
-                        referenceMaterial={referenceMaterial}
-                        sectionBlueprint={sectionBlueprint}
-                        evaluationCriteria={evaluationCriteria}
-                        exemplarNotes={exemplarNotes}
-                        generationStrategy={generationStrategy}
-                        tourTargetStyle={tourTargetStyle}
-                        renderTourHint={renderTourHint}
-                        onPromptTextChange={setPromptText}
-                        onCourseContextChange={setCourseContext}
-                        onRequirementsChange={setRequirements}
-                        onKnownPitfallsChange={setKnownPitfalls}
-                        onReferenceMaterialChange={setReferenceMaterial}
-                        onSectionBlueprintChange={setSectionBlueprint}
-                        onEvaluationCriteriaChange={setEvaluationCriteria}
-                        onExemplarNotesChange={setExemplarNotes}
-                        onGenerationStrategyChange={setGenerationStrategy}
-                      />
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            )}
-
-            {/* Step 4: Final */}
-            {showWizardFinal && (
+            {error && (
               <div
                 style={{
+                  background: 'var(--error-soft)',
+                  color: 'var(--error)',
+                  padding: '12px 16px',
                   borderRadius: 'var(--radius-md)',
-                  padding: 14,
-                  display: 'grid',
-                  gap: 12,
-                  ...getWizardStageCardStyle(3),
+                  marginBottom: 20,
+                  fontSize: 14,
                 }}
               >
-                {!tourOpen && (
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#6a4a3c' }}>
-                    שלב 4 מתוך 4: הגדרות יצירה וסיום
-                  </div>
-                )}
-                <div data-tour-id="tour-student-count" style={tourTargetStyle('tour-student-count')}>
-                  <Input
-                    label={he.instructor.studentCount}
-                    helpTooltip="כמה גרסאות טקסט לייצר בשלב זה"
-                    type="number"
-                    value={studentCount}
-                    onChange={(e) => setStudentCount(Number(e.target.value) || 1)}
-                    min={1}
-                    max={50}
-                  />
-                  {renderTourHint('tour-student-count')}
-                </div>
-
-                <div
-                  data-tour-id="tour-submit"
-                  style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12, ...tourTargetStyle('tour-submit') }}
-                >
-                  <Button type="submit" disabled={submitting || !title.trim() || !promptText.trim()}>
-                    {submitting ? '...' : he.instructor.create}
-                  </Button>
-                </div>
-                {renderTourHint('tour-submit')}
+                {error}
               </div>
             )}
+
+            <WizardStepCard
+              key={globalSubStep}
+              stepNumber={globalSubStep + 1}
+              totalSteps={SUB_STEPS.length}
+              question={currentDef.question}
+              explanation={currentDef.explanation}
+              example={currentDef.example}
+              impactLabels={currentDef.impactLabels}
+              onPrev={prevSubStep}
+              onNext={() => {
+                if (globalSubStep === SUB_STEPS.length - 1) {
+                  handleSubmit();
+                } else {
+                  nextSubStep();
+                }
+              }}
+              canGoNext={canGoNext}
+              isFirst={globalSubStep === 0}
+              isLast={globalSubStep === SUB_STEPS.length - 1}
+              nextLabel={submitting ? '...' : 'יצירת מטלה'}
+            >
+              {renderSubStepContent()}
+            </WizardStepCard>
           </div>
-        </form>
-      </div>
-      </div>
+        </div>
       </div>
     </div>
   );

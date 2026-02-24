@@ -8,7 +8,7 @@
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc --noEmit",
     "firebase:target:apply": "echo Run: firebase target:apply hosting auditSandbox SITE_ID",
     "deploy:firebase": "firebase deploy --only hosting:auditSandbox",
     "deploy:firebase:sandbox": "powershell -ExecutionPolicy Bypass -File scripts/deploy/firebase-deploy-sandbox.ps1",

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { isAccessAdminCode } from '@/lib/admin-access';
 import { generateCode } from '@/lib/utils';
 import { demoWriteBlockedResponse, isDemoReadOnly } from '@/lib/demo-mode';
 import { getGeminiGenerationModel } from '@/lib/ai/gemini';
@@ -9,6 +10,16 @@ import {
   serializePlannedStudentCodes,
 } from '@/lib/assignment-roster';
 import { sanitizeOptionalTextInput } from '@/lib/security';
+
+const DEFAULT_BETA_ASSIGNMENT_LIMIT = 5;
+
+function getBetaAssignmentLimit(): number {
+  const raw = process.env.BETA_ASSIGNMENT_LIMIT?.trim();
+  if (!raw) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
+  return Math.max(1, Math.min(200, Math.floor(parsed)));
+}
 
 export async function GET() {
   const session = await getSession();
@@ -122,38 +133,75 @@ export async function POST(request: NextRequest) {
       ? requestedStrategy
       : 'balanced_errors';
 
-  // Generate unique student codes
-  const studentCodes: string[] = [];
-  const existingCodes = new Set(
-    (await prisma.generatedText.findMany({ select: { studentCode: true } })).map(
-      (t: { studentCode: string }) => t.studentCode
-    )
-  );
-
-  for (let i = 0; i < parsedStudentCount; i++) {
-    let code: string;
-    do {
-      code = generateCode(6);
-    } while (existingCodes.has(code) || studentCodes.includes(code));
-    studentCodes.push(code);
+  if (!isAccessAdminCode(session.code)) {
+    const currentCount = await prisma.assignment.count({
+      where: { instructorCode: session.code },
+    });
+    const limit = getBetaAssignmentLimit();
+    if (currentCount >= limit) {
+      return NextResponse.json(
+        {
+          error: `בשלב הבטא אפשר ליצור עד ${limit} מטלות דוגמה. לפרויקט יציב בכיתה: contact@h2eapps.com`,
+          code: 'BETA_ASSIGNMENT_LIMIT_REACHED',
+          limit,
+        },
+        { status: 403 }
+      );
+    }
   }
+
+  // Generate unique student codes without loading the full table into memory.
+  const uniqueStudentCodes = new Set<string>();
+  let generationRounds = 0;
+  while (uniqueStudentCodes.size < parsedStudentCount && generationRounds < 20) {
+    generationRounds += 1;
+    const needed = parsedStudentCount - uniqueStudentCodes.size;
+    const batchSize = Math.max(needed * 3, 12);
+    const candidateSet = new Set<string>();
+    while (candidateSet.size < batchSize) {
+      candidateSet.add(generateCode(6));
+    }
+    for (const existing of uniqueStudentCodes) {
+      candidateSet.delete(existing);
+    }
+    if (candidateSet.size === 0) continue;
+
+    const candidateCodes = Array.from(candidateSet);
+    const existingRows = await prisma.generatedText.findMany({
+      where: { studentCode: { in: candidateCodes } },
+      select: { studentCode: true },
+    });
+    const existingCodeSet = new Set(existingRows.map((row) => row.studentCode));
+
+    for (const candidate of candidateCodes) {
+      if (existingCodeSet.has(candidate)) continue;
+      uniqueStudentCodes.add(candidate);
+      if (uniqueStudentCodes.size >= parsedStudentCount) break;
+    }
+  }
+
+  if (uniqueStudentCodes.size < parsedStudentCount) {
+    return NextResponse.json(
+      { error: 'Could not allocate unique student codes. Please retry.' },
+      { status: 503 }
+    );
+  }
+
+  const studentCodes = Array.from(uniqueStudentCodes);
 
   const assignment = await prisma.assignment.create({
     data: {
       title: safeTitle,
       promptText: safePromptText,
-        courseContext: sanitizeOptionalTextInput(courseContext, 1600),
-        requirements: sanitizeOptionalTextInput(requirements, 3200),
-        knownPitfalls: sanitizeOptionalTextInput(knownPitfalls, 3200),
-        referenceMaterial:
-          sanitizeOptionalTextInput(referenceMaterial, 8000),
-        sectionBlueprint:
-          sanitizeOptionalTextInput(sectionBlueprint, 5000),
-        evaluationCriteria:
-          sanitizeOptionalTextInput(evaluationCriteria, 6000),
-        exemplarNotes: sanitizeOptionalTextInput(exemplarNotes, 6000),
-        generationStrategy: normalizedStrategy,
-        plannedStudentCount: parsedStudentCount,
+      courseContext: sanitizeOptionalTextInput(courseContext, 1600),
+      requirements: sanitizeOptionalTextInput(requirements, 3200),
+      knownPitfalls: sanitizeOptionalTextInput(knownPitfalls, 3200),
+      referenceMaterial: sanitizeOptionalTextInput(referenceMaterial, 8000),
+      sectionBlueprint: sanitizeOptionalTextInput(sectionBlueprint, 5000),
+      evaluationCriteria: sanitizeOptionalTextInput(evaluationCriteria, 6000),
+      exemplarNotes: sanitizeOptionalTextInput(exemplarNotes, 6000),
+      generationStrategy: normalizedStrategy,
+      plannedStudentCount: parsedStudentCount,
       plannedStudentCodes: serializePlannedStudentCodes(studentCodes),
       modelVersion: getGeminiGenerationModel(),
       instructorCode: session.code,

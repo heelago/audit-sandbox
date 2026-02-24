@@ -71,7 +71,7 @@ export function CreateTourPanel({
             {activeStep.description}
           </div>
           <div style={{ fontSize: 12, color: 'var(--ink-faint)' }}>
-            הטיפ: האזור הפעיל בעמוד מסומן בהדגשה.
+            הטיפ: בכל שלב הסיור יעביר אותך אוטומטית לחלק הרלוונטי בטופס.
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
             <Button type="button" variant="secondary" onClick={onClose}>

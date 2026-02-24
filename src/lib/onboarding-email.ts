@@ -19,6 +19,15 @@ export interface InstructorOnboardingDeliveryStatus {
 }
 
 const DEFAULT_COLLECTION = 'mail';
+const DEFAULT_BETA_ASSIGNMENT_LIMIT = 5;
+
+function getBetaAssignmentLimit(): number {
+  const raw = process.env.BETA_ASSIGNMENT_LIMIT?.trim();
+  if (!raw) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return DEFAULT_BETA_ASSIGNMENT_LIMIT;
+  return Math.max(1, Math.min(200, Math.floor(parsed)));
+}
 
 function asObject(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object') return null;
@@ -83,13 +92,17 @@ function parseDeliveryStatus(payload: unknown): InstructorOnboardingDeliveryStat
 function buildOnboardingText(input: InstructorOnboardingEmailInput): { subject: string; text: string; html: string } {
   const loginUrl =
     process.env.PUBLIC_APP_URL?.trim() || 'https://auditsandbox--h2eapps-unified.us-central1.hosted.app/';
+  const betaAssignmentLimit = getBetaAssignmentLimit();
   const institutionLine = input.institution ? `מוסד: ${input.institution}\n` : '';
-  const subject = 'אישור הרשמה למרחב המרצים של H2eApps';
+  const subject = 'קוד גישה לבטא של H2eApps';
   const text =
     `שלום ${input.fullName},\n\n` +
-    `בקשת הגישה שלך אושרה בהצלחה.\n` +
+    `נרשמת בהצלחה לבטא של סביבת הביקורת.\n` +
     `${institutionLine}` +
     `קוד הגישה האישי שלך: ${input.inviteCode}\n\n` +
+    `בשלב הבטא אפשר ליצור עד ${betaAssignmentLimit} מטלות דוגמה.\n` +
+    `נשמח לפידבק על UX, לוגיקה ופיצ'רים שחסרים לתחום שלך.\n` +
+    `לגרסה יציבה ולשימוש עם סטודנטים: contact@h2eapps.com\n\n` +
     `כניסה למערכת:\n${loginUrl}\n\n` +
     `יש להזין את הקוד במסך הכניסה.\n` +
     `אם לא ביקשת גישה, אפשר להתעלם מההודעה.\n\n` +
@@ -99,9 +112,12 @@ function buildOnboardingText(input: InstructorOnboardingEmailInput): { subject: 
   const html =
     `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.7;color:#1f2937">` +
     `<p>שלום ${escapeHtml(input.fullName)},</p>` +
-    `<p>בקשת הגישה שלך אושרה בהצלחה.</p>` +
+    `<p>נרשמת בהצלחה לבטא של סביבת הביקורת.</p>` +
     (input.institution ? `<p><strong>מוסד:</strong> ${escapeHtml(input.institution)}</p>` : '') +
     `<p><strong>קוד הגישה האישי שלך:</strong> <span style="font-size:18px;letter-spacing:1px">${escapeHtml(input.inviteCode)}</span></p>` +
+    `<p>בשלב הבטא אפשר ליצור עד <strong>${betaAssignmentLimit} מטלות דוגמה</strong>.</p>` +
+    `<p>נשמח לפידבק על UX, לוגיקה ופיצ׳רים שחסרים לתחום שלך.</p>` +
+    `<p>לגרסה יציבה ולשימוש עם סטודנטים: <a href="mailto:contact@h2eapps.com">contact@h2eapps.com</a></p>` +
     `<p><strong>כניסה למערכת:</strong><br/><a href="${escapeHtml(loginUrl)}">${escapeHtml(loginUrl)}</a></p>` +
     `<p>יש להזין את הקוד במסך הכניסה.</p>` +
     `<p style="margin-top:18px">בהצלחה,<br/>H2eApps</p>` +
