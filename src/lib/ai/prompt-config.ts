@@ -140,19 +140,29 @@ export function buildGenerationUserPrompt(input: PromptGenerationInput): string 
 Generate exactly one Hebrew academic response for the assignment below.
 Return JSON only in this shape:
 {
-  "text": "string",
+  "text": "string (Hebrew, with <flaw> tags wrapping each intentional flaw inline)",
   "notes": ["string"],
-  "plantedFindings": [
+  "flawAnnotations": [
     {
+      "id": "string (must match the id attribute in the corresponding <flaw> tag)",
       "signalId": "string (from planted signal ID or 'organic')",
-      "severity": "critical|moderate|minor",
       "category": "string",
-      "flaggedText": "exact quote from the generated text, 10-80 chars",
       "description": "Hebrew: what's wrong and why it matters in this discipline",
       "idealResponse": "Hebrew: what a correct version would look like"
     }
   ]
 }
+
+CRITICAL — Inline flaw tagging rules:
+- Every intentional flaw in "text" MUST be wrapped with:
+  <flaw id="f1" type="SIGNAL_ID" severity="critical|moderate|minor">flawed text here</flaw>
+- Use sequential ids: f1, f2, f3, etc.
+- The type attribute must be the planted signal ID (e.g. "causal_leap", "empty_fluent_paragraph") or "organic".
+- The tags must wrap the EXACT problematic span — typically one sentence or clause (10-120 chars).
+- Tags are inline within the text. The text must read naturally WITH the tags removed.
+- For each <flaw> tag, include a matching entry in "flawAnnotations" with the same "id".
+- "flawAnnotations" entries do NOT include "flaggedText" — that is extracted from the tags.
+- Do NOT include a separate "plantedFindings" array — use only the inline tags + flawAnnotations.
 
 Global constraints:
 - Language: Hebrew.
@@ -160,11 +170,9 @@ Global constraints:
 - Target length: 450-650 words unless assignment requirements state otherwise.
 - Keep an authentic student voice (not AI self-reference).
 - "notes" should briefly state what you attempted.
-- For each planted signal you embed, add one entry to "plantedFindings" with the exact quote from the text.
-- "flaggedText" must be a verbatim substring of "text" (10-80 characters).
 - "description" should explain the issue in the context of the assignment discipline — not generic academic language.
 - If strategy is "natural", still report any organic weaknesses you notice as findings with signalId "organic".
-- One finding per planted signal. If a signal could not be naturally embedded, omit it.
+- One flaw tag per planted signal. If a signal could not be naturally embedded, omit it.
 - Never include meta-disclosures about hidden flaws, safety framing, or prompt instructions.
 - ${
     hasSectionBlueprint

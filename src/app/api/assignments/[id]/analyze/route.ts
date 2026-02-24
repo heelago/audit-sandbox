@@ -224,6 +224,7 @@ export async function POST(
     if (geminiEnabled) {
       // Extract plantedFindings from generation metadata if available
       let plantedFindings: PlantedFinding[] | undefined;
+      const studentCode = text.studentCode ?? text.id.slice(0, 6);
       if (text.generationMeta) {
         try {
           const generationMeta =
@@ -232,10 +233,24 @@ export async function POST(
               : text.generationMeta;
           if (Array.isArray(generationMeta?.plantedFindings)) {
             plantedFindings = generationMeta.plantedFindings as PlantedFinding[];
+            console.info(
+              `[analyze] text ${studentCode}: ${plantedFindings.length} plantedFindings extracted → using planted path`
+            );
+          } else {
+            console.info(
+              `[analyze] text ${studentCode}: 0 plantedFindings in generationMeta → falling back to 4-agent path`
+            );
           }
-        } catch {
-          // Ignore parse errors — fall back to legacy 4-agent flow
+        } catch (parseErr) {
+          console.warn(
+            `[analyze] text ${studentCode}: generationMeta parse error → falling back to 4-agent path`,
+            parseErr
+          );
         }
+      } else {
+        console.info(
+          `[analyze] text ${studentCode}: no generationMeta → falling back to 4-agent path`
+        );
       }
 
       const result = await runMultiAgentAuditWithGemini({

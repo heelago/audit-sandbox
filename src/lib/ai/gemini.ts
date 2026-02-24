@@ -68,6 +68,43 @@ export type PlantedFinding = {
   idealResponse: string | null;
 };
 
+// --- Inline <flaw> tag extraction ---
+
+type ExtractedFlawTag = {
+  id: string;
+  type: string;       // signalId from tag attribute
+  severity: string;
+  flaggedText: string; // inner content of the tag
+};
+
+type FlawExtractionResult = {
+  cleanText: string;
+  flaws: ExtractedFlawTag[];
+};
+
+function extractFlawTags(rawText: string): FlawExtractionResult {
+  const flaws: ExtractedFlawTag[] = [];
+  const regex = /<flaw\s+id="([^"]+)"\s+type="([^"]+)"\s+severity="([^"]+)">([\s\S]*?)<\/flaw>/g;
+
+  let match;
+  while ((match = regex.exec(rawText)) !== null) {
+    flaws.push({
+      id: match[1],
+      type: match[2],
+      severity: match[3],
+      flaggedText: match[4].trim(),
+    });
+  }
+
+  // Strip all <flaw> tags, keeping inner content
+  const cleanText = rawText
+    .replace(/<flaw\s+[^>]*>/g, '')
+    .replace(/<\/flaw>/g, '')
+    .trim();
+
+  return { cleanText, flaws };
+}
+
 function convertPlantedFindingsToAgentFindings(
   plantedFindings: PlantedFinding[]
 ): AgentFinding[] {
@@ -403,21 +440,23 @@ export async function generateAssignmentTextWithGemini(
     systemInstruction,
     userPrompt,
     temperature: 0.8,
-    maxOutputTokens: 2400,
+    maxOutputTokens: 4096,
   });
 
   type GenerationResponse = {
     text?: unknown;
     notes?: unknown;
+    flawAnnotations?: unknown;
+    // Legacy fields (fallback)
     riskSignals?: unknown;
     plantedFindings?: unknown;
   };
   const parsed = parseJsonFromModel<GenerationResponse>(raw);
-  const textContent =
+  const rawTextContent =
     toNonEmptyString(parsed?.text) ??
     extractTextFieldWithRegex(raw) ??
     toNonEmptyString(raw);
-  if (!textContent) {
+  if (!rawTextContent) {
     throw new GeminiApiError('Gemini generation did not return text content.', 502);
   }
 
@@ -427,27 +466,111 @@ export async function generateAssignmentTextWithGemini(
         .filter((item): item is string => Boolean(item))
     : [];
 
-  // Parse plantedFindings (new structured format)
+  // --- Primary path: extract inline <flaw> tags ---
+  const { cleanText, flaws: extractedFlaws } = extractFlawTags(rawTextContent);
   const plantedFindings: PlantedFinding[] = [];
-  if (Array.isArray(parsed?.plantedFindings)) {
-    for (const entry of parsed.plantedFindings) {
-      const value = asObject(entry);
-      if (!value) continue;
-      const flaggedText = toNonEmptyString(value.flaggedText);
-      const description = toNonEmptyString(value.description);
-      if (!flaggedText || !description) continue;
-      // Validate flaggedText is actually in the generated text
-      if (!textContent.includes(flaggedText)) continue;
-      plantedFindings.push({
-        signalId: toNonEmptyString(value.signalId) ?? 'organic',
-        severity: normalizeSeverity(value.severity),
-        category: toNonEmptyString(value.category) ?? 'analysis',
-        flaggedText,
-        description,
-        idealResponse: toNonEmptyString(value.idealResponse) ?? null,
-      });
+
+  if (extractedFlaws.length > 0) {
+    // Build annotation lookup from flawAnnotations array
+    const annotationMap = new Map<string, { signalId?: string; category?: string; description?: string; idealResponse?: string }>();
+    if (Array.isArray(parsed?.flawAnnotations)) {
+      for (const entry of parsed.flawAnnotations) {
+        const value = asObject(entry);
+        if (!value) continue;
+        const id = toNonEmptyString(value.id);
+        if (!id) continue;
+        annotationMap.set(id, {
+          signalId: toNonEmptyString(value.signalId) ?? undefined,
+          category: toNonEmptyString(value.category) ?? undefined,
+          description: toNonEmptyString(value.description) ?? undefined,
+          idealResponse: toNonEmptyString(value.idealResponse) ?? undefined,
+        });
+      }
+    }
+
+    let fromTagsAndAnnotations = 0;
+    let fromTagsOnly = 0;
+
+    for (const flaw of extractedFlaws) {
+      const annotation = annotationMap.get(flaw.id);
+      if (annotation?.description) {
+        fromTagsAndAnnotations++;
+        plantedFindings.push({
+          signalId: annotation.signalId ?? flaw.type,
+          severity: normalizeSeverity(flaw.severity),
+          category: annotation.category ?? 'analysis',
+          flaggedText: flaw.flaggedText,
+          description: annotation.description,
+          idealResponse: annotation.idealResponse ?? null,
+        });
+      } else {
+        // Annotation missing (possibly truncated) — still create finding from tag data
+        fromTagsOnly++;
+        plantedFindings.push({
+          signalId: flaw.type,
+          severity: normalizeSeverity(flaw.severity),
+          category: 'analysis',
+          flaggedText: flaw.flaggedText,
+          description: '(annotation missing — see flaggedText)',
+          idealResponse: null,
+        });
+      }
+    }
+
+    console.info(
+      `[generate] flaw tags: extracted ${extractedFlaws.length} from inline tags`
+    );
+    console.info(
+      `[generate] plantedFindings: ${plantedFindings.length} built (${fromTagsAndAnnotations} from tags + annotations, ${fromTagsOnly} from tags only)`
+    );
+  } else {
+    // --- Fallback: legacy plantedFindings array (backward compat) ---
+    console.info('[generate] no inline <flaw> tags found, falling back to legacy plantedFindings parsing');
+
+    const droppedPlantedFindings: { flaggedText: string; reason: string }[] = [];
+    if (Array.isArray(parsed?.plantedFindings)) {
+      const rawCount = parsed.plantedFindings.length;
+      for (const entry of parsed.plantedFindings) {
+        const value = asObject(entry);
+        if (!value) continue;
+        const flaggedText = toNonEmptyString(value.flaggedText);
+        const description = toNonEmptyString(value.description);
+        if (!flaggedText || !description) {
+          droppedPlantedFindings.push({
+            flaggedText: flaggedText ?? '(empty)',
+            reason: 'missing flaggedText or description',
+          });
+          continue;
+        }
+        // Validate flaggedText is actually in the generated text
+        if (!rawTextContent.includes(flaggedText)) {
+          droppedPlantedFindings.push({ flaggedText, reason: 'flaggedText not found in text' });
+          continue;
+        }
+        plantedFindings.push({
+          signalId: toNonEmptyString(value.signalId) ?? 'organic',
+          severity: normalizeSeverity(value.severity),
+          category: toNonEmptyString(value.category) ?? 'analysis',
+          flaggedText,
+          description,
+          idealResponse: toNonEmptyString(value.idealResponse) ?? null,
+        });
+      }
+      console.info(
+        `[generate] plantedFindings (legacy): ${rawCount} raw, ${plantedFindings.length} validated, ${droppedPlantedFindings.length} dropped`
+      );
+      for (const dropped of droppedPlantedFindings) {
+        console.info(`[generate]   dropped: "${dropped.flaggedText.slice(0, 80)}" — ${dropped.reason}`);
+      }
+    } else if (Array.isArray(parsed?.riskSignals)) {
+      console.info('[generate] model returned riskSignals instead of plantedFindings (old format)');
+    } else {
+      console.info('[generate] model returned neither plantedFindings nor riskSignals');
     }
   }
+
+  // Use cleanText (tags stripped) when tags were found, otherwise raw
+  const textContent = extractedFlaws.length > 0 ? cleanText : rawTextContent;
 
   // Fallback: parse legacy riskSignals if no plantedFindings
   const riskSignals = Array.isArray(parsed?.riskSignals)
