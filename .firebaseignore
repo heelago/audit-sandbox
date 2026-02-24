@@ -19,9 +19,12 @@ backups
 tmp_prompt_doc
 mock assignments for demo
 New folder
+prisma/dev.db
+prisma/dev.db-journal
 *.tsbuildinfo
 *.zip
 *.docx
+*.pdf
 .env
 .env.*
 firebase-debug.log

@@ -28,8 +28,8 @@ This file records stable product decisions so future sessions do not re-open alr
 6. Generation model target: `gemini-3-flash-preview`.
 7. Audit model target: `gemini-3-pro-preview`.
 8. Multi-agent analysis is retained (default 4 agents) with aggregation into preliminary reports.
-9. Instructor access control flow sends onboarding email automatically on approval:
-   - approve request -> generate invite code + queue onboarding email
+9. Instructor access control flow is open-beta auto-approval:
+   - submit request -> auto-generate/reuse invite code + queue onboarding email immediately
    - dashboard still supports explicit resend + delivery status checks
 10. Access requests + allowlist are first-class database entities (`AccessRequest`, `InstructorAccess`) with audit fields.
 11. Instructor first-login onboarding is now productized inside the real instructor area (not only showcase), including welcome modal and contextual help center.
@@ -39,18 +39,21 @@ This file records stable product decisions so future sessions do not re-open alr
 15. Wizard spine visual semantics follow redesign mapping: completed steps are Sage, active step is Amber, with a connector line and progress bar to reinforce staged flow.
 16. Main stage content cards follow the same semantic progression colors as the spine, ensuring a consistent visual language between navigation and active working area.
 17. Accessibility baseline for form-heavy flows uses tokenized semantic colors and responsive UI typography sizes, with explicit focus-visible rings on core controls.
+18. App Hosting deploys are expected to take minutes (build + rollout), unlike static Hosting deploys; deploy UX should be improved via payload pruning and smart-skip automation, not by expecting seconds-level rollout.
 
 ## Security and Operations Decisions
 
 1. Secrets remain in Firebase Secret Manager; no API keys in client bundle or source.
 2. API middleware guardrails stay enabled (rate limits, mutating-origin checks, body-size caps).
 3. Internal generation prompt structure should not be exposed to student-facing APIs.
-4. Access onboarding email delivery is queued through Firebase/Firestore mail collection after manual admin approval.
-5. Admin approval privileges are controlled through `ACCESS_ADMIN_CODES` secret.
+4. Access onboarding email delivery is queued through Firebase/Firestore `mail` collection on signup (auto-approval path).
+5. `ACCESS_ADMIN_CODES` remains for admin dashboard operations/support flows, not as a mandatory gate for beta signup.
 6. Approval email voice/signature uses product branding (`H2eApps`) instead of internal team signature.
 7. Access-request endpoint keeps layered abuse protection even if CAPTCHA is disabled (honeypot, minimum fill-time, per-IP and per-email limits).
 8. reCAPTCHA is treated as optional/enhancement control and can be toggled operationally via `ACCESS_REQUEST_RECAPTCHA_DISABLED`.
 9. reCAPTCHA site key is served at runtime from server env (`ACCESS_REQUEST_RECAPTCHA_SITE_KEY`) through a dedicated API route, reducing build-time env coupling.
+10. Open beta currently caps non-admin instructors to 5 assignments (configurable via `BETA_ASSIGNMENT_LIMIT`).
+11. Commit-aware smart deploy wrapper (`deploy:apphosting:smart`) is the default production deploy path to skip unnecessary App Hosting rollouts when no runtime-relevant changes exist.
 
 ## Confirmed Operational State (2026-02-23)
 

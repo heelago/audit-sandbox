@@ -9,6 +9,44 @@
 
 ## Latest Session Update (2026-02-24)
 
+- Refactor audit + stabilization pass completed (post-Claude large refactor):
+  - Audited refactor and fixed regressions in instructor create flow:
+    - Enforced stronger creation guardrails (required task, per-section task completion, at least one criterion, bounded version count).
+    - Restored per-section pedagogical inputs in step flow (`קריטריונים לחלק`, `מוקדי קושי לחלק`).
+    - Synced tour behavior/copy so guided steps now jump to the relevant wizard stage.
+  - Synced beta cap messaging with runtime config:
+    - Onboarding email now reads `BETA_ASSIGNMENT_LIMIT` instead of hardcoded `5`.
+  - Improved assignment code generation scalability:
+    - Replaced full-table `studentCode` preload with batched collision checks in `POST /api/assignments`.
+  - Validation snapshot after fixes:
+    - `pnpm.cmd run lint` -> pass (`tsc --noEmit` script)
+    - `pnpm.cmd exec tsc --noEmit` -> pass
+    - `pnpm.cmd run build` -> Next compile succeeds, local shell still ends with `spawn EPERM` (environmental/Windows process issue)
+
+- Deploy speed pass (App Hosting):
+  - Production and demo deploy pruning aligned:
+    - Updated `firebase.demo.json` ignore list to match production-grade pruning.
+    - Added excludes for `prisma/dev.db`, `prisma/dev.db-journal`, `*.pdf` in:
+      - `firebase.json`
+      - `firebase.demo.json`
+      - `.firebaseignore`
+  - Added commit-aware smart deploy wrapper:
+    - New script: `scripts/deploy/firebase-deploy-apphosting-smart.ps1`
+    - Behavior:
+      1) Skips deploy if current `HEAD` already recorded as deployed.
+      2) Skips deploy if only deploy-irrelevant files changed.
+      3) Supports override (`-Force`) and preview (`-DryRun`).
+    - Added package scripts:
+      - `deploy:apphosting:smart`
+      - `deploy:apphosting:smart:debug`
+      - `deploy:apphosting:smart:dryrun`
+    - First dry-run verified in terminal; no live deploy executed yet with smart wrapper, so no deploy-state commit has been recorded yet.
+
+- Pending follow-up for Claude:
+  1. Run first real production deploy via `pnpm.cmd run deploy:apphosting:smart` to seed `.firebase/deploy-state/auditsandbox.last_deployed_commit.txt`.
+  2. Optionally add parallel `demo` smart wrapper (`deploy:apphosting:demo:smart`) if frequent demo deploy cadence continues.
+  3. Keep using scoped git adds because workspace contains unrelated doc/style updates not part of runtime changes.
+
 - Instructor create flow UX upgrade (real app, not showcase):
   - Added a 4-step wizard shell in `src/app/instructor/create/page.tsx`:
     - Step chips (`1. פתיחה`, `2. בניית המטלה`, `3. טיוב פרומפט`, `4. יצירה`)
@@ -50,6 +88,14 @@
     - `pnpm.cmd exec tsc --noEmit`: pass
     - `pnpm.cmd run lint`: blocked by `next lint` script incompatibility on current Next.js 16 setup
     - `pnpm.cmd run build`: compile succeeded, then exited with local `spawn EPERM` (environment/process issue)
+- Access onboarding flow changed to open beta auto-approval:
+  - `POST /api/access-requests` now auto-approves immediately (no manual review gate), issues/reuses instructor code, and queues onboarding email instantly.
+  - Request rows are saved as `approved` with `reviewedByCode: AUTO_BETA` for traceability.
+  - Landing form copy now frames this as beta: automatic access code, feedback request, stable contact `contact@h2eapps.com`, and current cap of 5 sample assignments.
+  - Onboarding email text now reflects the same beta framing and contact.
+- Beta usage cap in backend:
+  - `POST /api/assignments` enforces a per-instructor cap (default 5) for non-admin codes.
+  - env override: `BETA_ASSIGNMENT_LIMIT` (default `5`).
 
 ### Claude Browser QA Handoff (2026-02-24)
 
@@ -114,10 +160,9 @@ Known local tooling caveats (not product UX bugs):
 - Production onboarding email readiness confirmed:
   - Existing Firebase Trigger Email extension in `h2eapps-unified` is reused (no SMTP reconfiguration required for this app).
   - Confirmed extension collection path alignment: `mail`.
-  - Confirmed manual admin-secret setup completed for approval authority: `ACCESS_ADMIN_CODES`.
   - Operational policy now:
-    1) approve request -> create code + queue onboarding email automatically
-    2) optional manual resend/status check remains available in dashboard
+    1) submit registration -> auto-approve + create/reuse code + queue onboarding email
+    2) optional manual resend/status check remains available in dashboard for support/debug
 - Onboarding UX upgrade (in real instructor app):
   - Added global instructor onboarding hub with first-login welcome screen + floating help center:
     - `src/components/onboarding/InstructorOnboardingHub.tsx`

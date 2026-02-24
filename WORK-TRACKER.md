@@ -90,10 +90,17 @@ Stabilize instructor onboarding and first-use experience (email + welcome + guid
 | T74 | Apply semantic stage styling to content cards | done | Stage content sections now mirror spine semantics: active Amber, done Sage, pending neutral, with explicit stage headers (שלב X מתוך 4) to improve orientation. |
 | T75 | Accessibility token pass for contrast + mobile typography | done | Added semantic color tokens + UI text-size tokens in `src/styles/tokens.css`, updated `Input`/`Textarea`/`Button` components for stronger readable defaults and focus ring, and migrated create-page step semantics to tokenized colors. |
 | T76 | Create targeted manual QA checklist for wizard UX | done | Added `QA-CHECKLIST-CREATE-WIZARD-2026-02-24.md` with desktop/mobile/focus checks, pass criteria, and known tooling blockers (`lint`, local `build` EPERM). |
+| T77 | Switch lecturer registration to auto-approved beta access | done | `/api/access-requests` now auto-approves, issues/reuses instructor code immediately, queues onboarding email immediately, and logs request as `approved` with `AUTO_BETA`. |
+| T78 | Beta framing and assignment cap messaging | done | Updated registration form + onboarding email with beta framing, feedback request, stable-contact email (`contact@h2eapps.com`), and implemented backend assignment cap (default 5) in `/api/assignments`. |
+| T79 | Audit Claude refactor and close functional regressions | done | Fixed create-flow validation looseness, restored section-level criteria/pitfall editing, synced tour behavior text/flow, and improved student-code generation scalability in assignment create API. |
+| T80 | Make lint check reliable for current Next.js setup | done | `lint` script now runs `tsc --noEmit` to provide stable local CI signal. |
+| T81 | Prune App Hosting deploy payload (prod+demo alignment) | done | Synced `firebase.demo.json` ignore rules with prod baseline and added excludes for `prisma/dev.db`, `prisma/dev.db-journal`, `*.pdf` across deploy ignore files. |
+| T82 | Add commit-aware smart App Hosting deploy wrapper | done | Added `scripts/deploy/firebase-deploy-apphosting-smart.ps1` + package scripts; supports skip-on-no-runtime-change, `-DryRun`, and `-Force`. |
+| T83 | Seed smart deploy state with first successful live rollout | pending | Run `pnpm.cmd run deploy:apphosting:smart` once so `.firebase/deploy-state/auditsandbox.last_deployed_commit.txt` is initialized. |
 
 ## Next Actions
-1. Execute the manual checklist in `QA-CHECKLIST-CREATE-WIZARD-2026-02-24.md` and capture any UI regressions.
-2. Migrate lint script from `next lint` to a Next.js 16-compatible `eslint` command and re-run lint.
-3. Re-test `pnpm run build` in a clean local shell to confirm whether `spawn EPERM` is environmental.
-4. Re-enable reCAPTCHA cleanly: add production domain allowlist, switch `ACCESS_REQUEST_RECAPTCHA_DISABLED` to `0`, verify token score/action behavior end-to-end.
-5. Execute live console validation in `h2eapps-unified` (Firestore rules + Secret Manager IAM + App Hosting env bindings) using `SECURITY-HARDENING.md`.
+1. Run first live deploy through `pnpm.cmd run deploy:apphosting:smart` to initialize smart deploy state tracking.
+2. Execute the manual checklist in `QA-CHECKLIST-CREATE-WIZARD-2026-02-24.md` and capture any remaining UI regressions.
+3. Validate end-to-end auto-registration flow in production: submit form -> receive code email -> login works without admin action.
+4. Confirm the beta cap UX in create-flow messaging and API error handling under both default and env override (`BETA_ASSIGNMENT_LIMIT`).
+5. Re-test `pnpm run build` in a clean local shell to confirm whether `spawn EPERM` is environmental.
