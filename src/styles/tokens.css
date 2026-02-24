@@ -7,8 +7,9 @@
   --ink: #2C2924;
   --ink-soft: #5E574B;
   --ink-faint: #9E9688;
-  --accent: #8B5E3C;
-  --accent-soft: #8B5E3C18;
+  --accent: #85A88B;
+  --accent-soft: #85A88B18;
+  --accent-emphasis: #6F9277;
 
   --error: #B54D4D;
   --error-soft: #B54D4D14;
@@ -18,8 +19,8 @@
   --warn-soft: #A68A2B14;
   --gap: #9B6B42;
   --gap-soft: #9B6B4214;
-  --info: #4A6F8B;
-  --info-soft: #4A6F8B14;
+  --info: #85A88B;
+  --info-soft: #85A88B14;
   --neutral: #7A7568;
   --neutral-soft: #7A756814;
 
@@ -33,14 +34,14 @@
   --neutral-surface: #FCFAF5;
   --neutral-border: #D3CBBB;
   --neutral-text: #3F3B35;
-  --focus-ring: #2E6C89;
+  --focus-ring: #6F9277;
 
   /* UI typography scale */
   --ui-label-size: 13px;
   --ui-input-size: 14px;
   --ui-button-size: 14px;
 
-  --font-display: 'Heebo', 'Rubik', 'Arial Hebrew', sans-serif;
+  --font-display: 'Frank Ruhl Libre', 'David Libre', 'Heebo', serif;
   --font-body: 'Heebo', 'Rubik', 'Arial Hebrew', sans-serif;
 
   --radius-sm: 6px;

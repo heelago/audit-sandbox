@@ -7,8 +7,9 @@ export const colors = {
   ink: '#2C2924',
   inkSoft: '#5E574B',
   inkFaint: '#9E9688',
-  accent: '#8B5E3C',
-  accentSoft: '#8B5E3C18',
+  accent: '#85A88B',
+  accentSoft: '#85A88B18',
+  accentEmphasis: '#6F9277',
 
   error: '#B54D4D',
   errorSoft: '#B54D4D14',
@@ -18,14 +19,14 @@ export const colors = {
   warnSoft: '#A68A2B14',
   gap: '#9B6B42',
   gapSoft: '#9B6B4214',
-  info: '#4A6F8B',
-  infoSoft: '#4A6F8B14',
+  info: '#85A88B',
+  infoSoft: '#85A88B14',
   neutral: '#7A7568',
   neutralSoft: '#7A756814',
 } as const;
 
 export const fonts = {
-  display: "'Heebo', 'Rubik', 'Arial Hebrew', sans-serif",
+  display: "'Frank Ruhl Libre', 'David Libre', 'Heebo', serif",
   body: "'Heebo', 'Rubik', 'Arial Hebrew', sans-serif",
 } as const;
 
