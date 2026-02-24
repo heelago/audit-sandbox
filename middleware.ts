@@ -79,9 +79,44 @@ function collectAllowedOrigins(request: NextRequest): Set<string> {
   return allowed;
 }
 
+function collectRequestHosts(request: NextRequest): Set<string> {
+  const hosts = new Set<string>();
+
+  if (request.nextUrl.host) {
+    hosts.add(request.nextUrl.host.toLowerCase());
+  }
+
+  const host = request.headers.get('host');
+  if (host) {
+    hosts.add(host.trim().toLowerCase());
+  }
+
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  if (forwardedHost) {
+    const firstHost = forwardedHost.split(',')[0]?.trim();
+    if (firstHost) {
+      hosts.add(firstHost.toLowerCase());
+    }
+  }
+
+  return hosts;
+}
+
 function hasInvalidOrigin(request: NextRequest): boolean {
   const origin = parseOrigin(request.headers.get('origin'));
   if (!origin) return false;
+
+  // Host-level same-origin validation is resilient to proxy protocol rewrites
+  // (for example internal http between edge and runtime while browser is https).
+  try {
+    const originHost = new URL(origin).host.toLowerCase();
+    if (collectRequestHosts(request).has(originHost)) {
+      return false;
+    }
+  } catch {
+    return true;
+  }
+
   return !collectAllowedOrigins(request).has(origin);
 }
 
