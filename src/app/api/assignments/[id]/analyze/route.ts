@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { getMockRubricItems } from '@/lib/mock-data';
 import { demoWriteBlockedResponse, isDemoReadOnly } from '@/lib/demo-mode';
-import { isGeminiModeEnabled, runMultiAgentAuditWithGemini } from '@/lib/ai/gemini';
+import { isGeminiModeEnabled, runMultiAgentAuditWithGemini, type PlantedFinding } from '@/lib/ai/gemini';
 import {
   detectPlantedSignalsInText,
   extractPlantedSignalIds,
@@ -222,6 +222,22 @@ export async function POST(
   const plans: TextAnalysisPlan[] = [];
   for (const text of textsToProcess) {
     if (geminiEnabled) {
+      // Extract plantedFindings from generation metadata if available
+      let plantedFindings: PlantedFinding[] | undefined;
+      if (text.generationMeta) {
+        try {
+          const generationMeta =
+            typeof text.generationMeta === 'string'
+              ? JSON.parse(text.generationMeta)
+              : text.generationMeta;
+          if (Array.isArray(generationMeta?.plantedFindings)) {
+            plantedFindings = generationMeta.plantedFindings as PlantedFinding[];
+          }
+        } catch {
+          // Ignore parse errors — fall back to legacy 4-agent flow
+        }
+      }
+
       const result = await runMultiAgentAuditWithGemini({
         assignmentTitle: assignment.title,
         promptText: assignment.promptText,
@@ -235,6 +251,7 @@ export async function POST(
         textContent: text.textContent,
         customAgents: parsedBody.customAgents,
         maxFindingsPerAgent: parsedBody.maxFindingsPerAgent ?? undefined,
+        plantedFindings,
       });
 
       const agentItems = result.findings.map((finding) => {

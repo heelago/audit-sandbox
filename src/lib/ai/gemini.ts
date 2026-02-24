@@ -9,6 +9,7 @@ import {
   DEFAULT_AUDIT_AGENTS_CONFIG,
   GENERATION_SYSTEM_INSTRUCTION,
   RESCUE_AUDIT_SYSTEM_INSTRUCTION,
+  SUPPLEMENTARY_AUDIT_AGENT,
 } from '@/lib/ai/prompt-config';
 
 const GEMINI_API_BASE = process.env.GEMINI_API_BASE_URL?.trim() || 'https://generativelanguage.googleapis.com/v1beta';
@@ -56,6 +57,38 @@ export interface MultiAgentAuditResult {
     minor: number;
   };
   errors: string[];
+}
+
+export type PlantedFinding = {
+  signalId: string;
+  severity: FindingSeverity;
+  category: string;
+  flaggedText: string;
+  description: string;
+  idealResponse: string | null;
+};
+
+function convertPlantedFindingsToAgentFindings(
+  plantedFindings: PlantedFinding[]
+): AgentFinding[] {
+  return plantedFindings.map((f) => ({
+    severity: f.severity,
+    category: f.category,
+    description: f.description,
+    idealResponse: f.idealResponse,
+    flaggedText: f.flaggedText,
+    confidence: 0.95,
+    passSource: 'generation:planted',
+  }));
+}
+
+function formatPlantedFindingsSummary(findings: PlantedFinding[]): string {
+  return findings
+    .map(
+      (f, i) =>
+        `${i + 1}. [${f.severity}] "${f.flaggedText}" — ${f.description}`
+    )
+    .join('\n');
 }
 
 export interface AssignmentGenerationInput {
@@ -377,6 +410,7 @@ export async function generateAssignmentTextWithGemini(
     text?: unknown;
     notes?: unknown;
     riskSignals?: unknown;
+    plantedFindings?: unknown;
   };
   const parsed = parseJsonFromModel<GenerationResponse>(raw);
   const textContent =
@@ -392,6 +426,30 @@ export async function generateAssignmentTextWithGemini(
         .map((item) => toNonEmptyString(item))
         .filter((item): item is string => Boolean(item))
     : [];
+
+  // Parse plantedFindings (new structured format)
+  const plantedFindings: PlantedFinding[] = [];
+  if (Array.isArray(parsed?.plantedFindings)) {
+    for (const entry of parsed.plantedFindings) {
+      const value = asObject(entry);
+      if (!value) continue;
+      const flaggedText = toNonEmptyString(value.flaggedText);
+      const description = toNonEmptyString(value.description);
+      if (!flaggedText || !description) continue;
+      // Validate flaggedText is actually in the generated text
+      if (!textContent.includes(flaggedText)) continue;
+      plantedFindings.push({
+        signalId: toNonEmptyString(value.signalId) ?? 'organic',
+        severity: normalizeSeverity(value.severity),
+        category: toNonEmptyString(value.category) ?? 'analysis',
+        flaggedText,
+        description,
+        idealResponse: toNonEmptyString(value.idealResponse) ?? null,
+      });
+    }
+  }
+
+  // Fallback: parse legacy riskSignals if no plantedFindings
   const riskSignals = Array.isArray(parsed?.riskSignals)
     ? parsed.riskSignals
         .map((item) => toNonEmptyString(item))
@@ -406,7 +464,9 @@ export async function generateAssignmentTextWithGemini(
       model,
       strategy: input.generationStrategy,
       notes,
-      riskSignals,
+      ...(plantedFindings.length > 0
+        ? { plantedFindings }
+        : { riskSignals }),
       generatedAt: new Date().toISOString(),
     },
   };
@@ -425,9 +485,9 @@ export async function runMultiAgentAuditWithGemini(params: {
   textContent: string;
   customAgents?: unknown;
   maxFindingsPerAgent?: number;
+  plantedFindings?: PlantedFinding[];
 }): Promise<MultiAgentAuditResult> {
   const model = getGeminiAuditModel();
-  const agents = resolveAuditAgents(params.customAgents);
   const maxFindingsPerAgent = Math.max(
     1,
     Math.min(12, params.maxFindingsPerAgent ?? DEFAULT_MAX_FINDINGS_PER_AGENT)
@@ -435,16 +495,36 @@ export async function runMultiAgentAuditWithGemini(params: {
 
   const agentRuns: AgentRunResult[] = [];
   const errors: string[] = [];
+  const hasPlantedFindings = Array.isArray(params.plantedFindings) && params.plantedFindings.length > 0;
 
-  for (const agent of agents) {
-    const systemInstruction = AUDIT_SYSTEM_INSTRUCTION;
-    const userPrompt = buildAuditUserPrompt({ agent, params, maxFindingsPerAgent });
+  if (hasPlantedFindings) {
+    // --- Planted findings path: use generation-annotated findings as primary source ---
+    const planted = params.plantedFindings!;
+    const plantedAgentFindings = convertPlantedFindingsToAgentFindings(planted);
+
+    agentRuns.push({
+      agentId: 'generation_planted',
+      agentName: 'Generation-Planted Findings',
+      summary: `${planted.length} findings annotated by the generation model.`,
+      findings: plantedAgentFindings,
+      error: null,
+    });
+
+    // Run one supplementary agent to find organic issues not already covered
+    const alreadyCoveredFindings = formatPlantedFindingsSummary(planted);
+    const supplementaryAgent = SUPPLEMENTARY_AUDIT_AGENT;
+    const supplementaryPrompt = buildAuditUserPrompt({
+      agent: supplementaryAgent,
+      params,
+      maxFindingsPerAgent: 3,
+      alreadyCoveredFindings,
+    });
 
     try {
       const raw = await callGeminiText({
         model,
-        systemInstruction,
-        userPrompt,
+        systemInstruction: AUDIT_SYSTEM_INSTRUCTION,
+        userPrompt: supplementaryPrompt,
         temperature: 0.2,
         maxOutputTokens: 1800,
       });
@@ -470,29 +550,92 @@ export async function runMultiAgentAuditWithGemini(params: {
                 idealResponse: toNonEmptyString(value.idealResponse),
                 flaggedText: toNonEmptyString(value.flaggedText),
                 confidence: normalizeConfidence(value.confidence),
-                passSource: `agent:${agent.id}`,
+                passSource: `agent:${supplementaryAgent.id}`,
               } as AgentFinding;
             })
             .filter((item): item is AgentFinding => Boolean(item))
         : [];
 
       agentRuns.push({
-        agentId: agent.id,
-        agentName: agent.name,
+        agentId: supplementaryAgent.id,
+        agentName: supplementaryAgent.name,
         summary,
-        findings: findings.slice(0, maxFindingsPerAgent),
+        findings: findings.slice(0, 3),
         error: null,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Agent execution failed.';
-      errors.push(`${agent.name}: ${message}`);
+      errors.push(`${supplementaryAgent.name}: ${message}`);
       agentRuns.push({
-        agentId: agent.id,
-        agentName: agent.name,
+        agentId: supplementaryAgent.id,
+        agentName: supplementaryAgent.name,
         summary: 'Agent run failed.',
         findings: [],
         error: message,
       });
+    }
+  } else {
+    // --- Legacy path: run all 4 agents independently ---
+    const agents = resolveAuditAgents(params.customAgents);
+
+    for (const agent of agents) {
+      const systemInstruction = AUDIT_SYSTEM_INSTRUCTION;
+      const userPrompt = buildAuditUserPrompt({ agent, params, maxFindingsPerAgent });
+
+      try {
+        const raw = await callGeminiText({
+          model,
+          systemInstruction,
+          userPrompt,
+          temperature: 0.2,
+          maxOutputTokens: 1800,
+        });
+
+        type AgentResponse = {
+          agentSummary?: unknown;
+          findings?: unknown;
+        };
+        const parsed = parseJsonFromModel<AgentResponse>(raw);
+        const summary = toNonEmptyString(parsed?.agentSummary) ?? 'No agent summary.';
+
+        const findings = Array.isArray(parsed?.findings)
+          ? parsed.findings
+              .map((entry) => {
+                const value = asObject(entry);
+                if (!value) return null;
+                const description = toNonEmptyString(value.description);
+                if (!description) return null;
+                return {
+                  severity: normalizeSeverity(value.severity),
+                  category: toNonEmptyString(value.category) ?? 'analysis',
+                  description,
+                  idealResponse: toNonEmptyString(value.idealResponse),
+                  flaggedText: toNonEmptyString(value.flaggedText),
+                  confidence: normalizeConfidence(value.confidence),
+                  passSource: `agent:${agent.id}`,
+                } as AgentFinding;
+              })
+              .filter((item): item is AgentFinding => Boolean(item))
+          : [];
+
+        agentRuns.push({
+          agentId: agent.id,
+          agentName: agent.name,
+          summary,
+          findings: findings.slice(0, maxFindingsPerAgent),
+          error: null,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Agent execution failed.';
+        errors.push(`${agent.name}: ${message}`);
+        agentRuns.push({
+          agentId: agent.id,
+          agentName: agent.name,
+          summary: 'Agent run failed.',
+          findings: [],
+          error: message,
+        });
+      }
     }
   }
 
